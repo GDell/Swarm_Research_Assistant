@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# Author: Gabriel Dell'Accio\n\n\n\n#library(sp)\n#library(rgdal)\n#library(raster)\n#install.packages(leaflet)\n#library(leaflet)\n#install.packages(mapview)\n#library(mapview)\n#library(ggplot2)\n# xGrid <- 1000\n#yGrid <- 1000\n\n\n\n\n\ncreate.arena <- function(xLength, yLength) {\n  xLimit <- xLength \n  yLimit <- yLength\n  \n  arena.Data <- data.frame(\n    yWall = rep(1,yLimit),\n    xWall = c(1:xLimit),\n    xNorthWall = c(1:xLimit),\n    yNorthWall = rep(yLimit,yLimit)\n  )\n  \n\n  arena <- ggplot(data = arena.Data, aes(x=xWall,y=yWall))\n  # Arena Borders\n  arena <- arena + geom_point() +  ylim(1,yLimit) + xlim(1,xLimit) + geom_point(aes(xNorthWall,yNorthWall)) + geom_point(aes(rep(1,xLimit),c(1:yLimit))) + geom_point(aes(rep(xLimit,xLimit),c(1:yLimit)))\n\n  \n  \n  return(arena)\n}\n\narenaSim <- create.arena(2000, 2000)\n\narenaSim\n\n",
+    "created" : 1509979044411.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2206706953",
+    "id" : "4EBE976B",
+    "lastKnownWriteTime" : 1509986804,
+    "last_content_update" : 1509986804962,
+    "path" : "C:/Users/Gabriel/Desktop/gaDellaccio_Thesis_Sim/reynoldsSim/reynoldsSim.R",
+    "project_path" : "reynoldsSim.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
