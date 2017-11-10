@@ -18,8 +18,8 @@ swarmCohesion <- 0.5
 swarmAvoidance <- 0.5
 baseMovementRate <- 4
 densitySensitivity <- 10
-spatialDistribution <- 10
-thetaDistribution <- 5
+spatialDistribution <- 100
+thetaDistribution <- 50
 
 # GENERATING AN ARENA
 create.arena <- function(xLength, yLength) {
@@ -101,13 +101,13 @@ determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
 
   # print(paste("Number of indviduals in space: ", numberOfIndividualsPresent))
   # print(paste("total positions: ", nTotalPositions))
-  finalDensity <- (numberOfIndividualsPresent / nTotalPositions)
-
+  finalDensity <- (numberOfIndividualsPresent / nTotalPositions) 
   return(finalDensity)
 
 }
 
 
+# Determines the density value for each agent in the swarm.
 find.Neighbors <- function() {
   count <- 1
   for (var in 1:nIndividuals) {
@@ -117,73 +117,80 @@ find.Neighbors <- function() {
     count <- count + 1
   }
 }
-
 find.Neighbors()
 
+meanDensity <- (sum(arena.Data$Density) / nIndividuals ) 
+sdDensity <- (sd(arena.Data$Density)) 
 
 
-# This function will search a box of x height and width and return the direction of
-# the closest neighbor
-# senseNeighbor <- function(senseHeight, senseWidth, locationX, locationY) {
-
-#   regionOne <- c()
-#   # REGION 1
-#   for(k in 1:senseHeight) {
-#     for(j in 1:senseWidth) {
-
-#       returnX <- locationX + J
-#       returnY <- locationY - k
-
-#       regionOne <- c(regionOne, c(returnX,returnY))
+sdDistance <- function(value, mean, sd) {
+  temp <- abs(mean - value) %/% sd
+  return(temp)
+}
 
 
-#       returnTwoX <- location
+determine.density.distance <- function(mean, sd) {
+ for (var in 1:nIndividuals){
+   arena.Data$DensityDistance[var] <<- sdDistance(arena.Data$Density[var], mean, sd)
 
-#     }
-#   }
-# }
+ }
+}
 
-# determineThetaDirection <- function(currentTheta) {
-
-#   if ((currentTheta > 0) && (currentTheta < 90)) {
-
-#     # REGION 1
-#     # Down to the right, so y is decreasing, x is increasing.
-
-#   } else if((currentTheta > 89) && (currentTheta < 91)) {
-
-#     # DOWN
-#     # Downwards, so y is decreasing, x stays the same.
-
-#   } else if((currentTheta > 91)  && (currentTheta < 179)) {
-
-#     # REGION 2
-#     # Down to the left, so y is decreasing, x is decreasing.
-
-#   } else if((currentTheta > 179.0) && (currentTheta < 181.00)) {
-
-#     # LEFT
-#     # To the left, so y is staying the same, x is decreasing.
-
-#   } else if((currentTheta > 181.0) && (currentTheta < 269.0)) {
-
-#     # REGION 3
-#     # Upwards to the left, so Y is increasing, x is decreasing
-
-#   } else if((currentTheta > 269.0) && (currentTheta < 271.0)) {
-
-#     # UP
-#     # Upwards, so x is staying the same, y is increasing
-
-#   } else if(currentTheta > 271) {
-
-#     # REGION 4
-#     # Upwards to the right, so x is increaing, y is increasing
-#   }
+determine.density.distance(meanDensity, sdDensity)
 
 
-#   #return(categorizedTheta)
-# }
+step.swarm <- function() {
+  
+  for (var in 1:nIndividuals) {
+    arena.Data$xPosition <-
+    arena.Data$yPosition <- 
+  }
+  
+}
+
+
+determineThetaDirection <- function(currentTheta) {
+  if ((currentTheta > 0) && (currentTheta < 90)) {
+    xDir <- 1
+    yDir <- -1
+    # REGION 1
+    # Down to the right, so y is decreasing, x is increasing.
+  } else if((currentTheta > 89) && (currentTheta < 91)) {
+    xDir <- 0
+    yDir <- -1
+    # DOWN
+    # Downwards, so y is decreasing, x stays the same.
+  } else if((currentTheta > 91)  && (currentTheta < 179)) {
+    xDir <- -1
+    yDir <- -1
+    # REGION 2
+    # Down to the left, so y is decreasing, x is decreasing.
+  } else if((currentTheta > 179.0) && (currentTheta < 181.00)) {
+    xDir <- -1
+    yDir <- 0
+    # LEFT
+    # To the left, so y is staying the same, x is decreasing.
+  } else if((currentTheta > 181.0) && (currentTheta < 269.0)) {
+    xDir <- -1
+    yDir <- 1
+    # REGION 3
+    # Upwards to the left, so Y is increasing, x is decreasing
+  } else if((currentTheta > 269.0) && (currentTheta < 271.0)) {
+    xDir <- 0
+    yDir <- 1
+    # UP
+    # Upwards, so x is staying the same, y is increasing
+  } else if(currentTheta > 271) {
+    xDir <- 1
+    yDir <- 1
+    # REGION 4
+    # Upwards to the right, so x is increaing, y is increasing
+  } else if(currentTheta >= 359.0 && currentTheta <= 360) {
+    xDir <- 1
+    yDir <- 0
+  }
+  return(c(xDir,yDir))
+}
 
 # This function runs a step of the simulation in which:
   # - Each agent asses how close it is to other agents 
@@ -201,8 +208,6 @@ find.Neighbors()
 # }
 
 # BEHAVIOR PRIMITIVES:
-
-
 
 # # HEATMAP GENERATION
 # # Assign a value to a location given how far away it is from the center. The farther the smaller the value.
