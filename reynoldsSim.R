@@ -139,14 +139,6 @@ determine.density.distance <- function(mean, sd) {
 determine.density.distance(meanDensity, sdDensity)
 
 
-step.swarm <- function() {
-  
-  for (var in 1:nIndividuals) {
-    arena.Data$xPosition <-
-    arena.Data$yPosition <- 
-  }
-  
-}
 
 
 determineThetaDirection <- function(currentTheta) {
@@ -189,8 +181,30 @@ determineThetaDirection <- function(currentTheta) {
     xDir <- 1
     yDir <- 0
   }
-  return(c(xDir,yDir))
+
+  result <- c(xDir,yDir)
+
+  return(result)
 }
+
+
+step.swarm <- function() {
+  
+  for (var in 1:nIndividuals) {
+
+    dirMult <- determineThetaDirection(arena.Data$theta[var])
+
+    arena.Data$xPosition[var] <<- (dirMult[1] * baseMovementRate) + arena.Data$xPosition[var]
+    arena.Data$yPosition[var] <<- (dirMult[2] * baseMovementRate)  + arena.Data$yPosition[var]
+  }
+  
+  arenaSim <- display.swarm()
+  arenaSim
+
+}
+
+
+step.swarm()
 
 # This function runs a step of the simulation in which:
   # - Each agent asses how close it is to other agents 
@@ -235,6 +249,7 @@ determineThetaDirection <- function(currentTheta) {
 #   return(arena.heat.map)
 # }
 # heat.map <- create.heatmap(xVal,yVal)
+
 
 
 
