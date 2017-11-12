@@ -1,6 +1,5 @@
 # Author: Gabriel Dell'Accio
 # The following is a 2D variant of the Reynolds Boid model.
-
 # LIBRARIES:
 library(ggplot2)
 
@@ -8,17 +7,17 @@ library(ggplot2)
 # Set if equal height and width
 size <- 1000.0
 
-centerCor <- rep(size/2, 2)
+centerCor <- rep(size/2,2)
 
 xVal <- size
 yVal <- size
 
-nIndividuals <- 200 
+nIndividuals <- 100 
 swarmCohesion <- 0.5
 swarmAvoidance <- 0.5
 baseMovementRate <- 4
-densitySensitivity <- 10
-spatialDistribution <- 100
+densitySensitivity <- 75
+spatialDistribution <- 150
 thetaDistribution <- 50
 
 # GENERATING AN ARENA
@@ -33,8 +32,8 @@ create.arena <- function(xLength, yLength) {
     yNorthWall = rep(yLimit,yLimit)
   )
 
+  # Creating Arena Borders
   arena <- ggplot(data = arena.Data, aes(x=xWall,y=yWall))
-  # Arena Borders
   arena <- arena + geom_point() +  ylim(1,yLimit) + xlim(1,xLimit) + geom_point(aes(xNorthWall,yNorthWall)) + geom_point(aes(rep(1,xLimit),c(1:yLimit))) + geom_point(aes(rep(xLimit,xLimit),c(1:yLimit)))
 
   return(arena)
@@ -99,13 +98,12 @@ determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
     count <- count + 1
   }
 
-  # print(paste("Number of indviduals in space: ", numberOfIndividualsPresent))
-  # print(paste("total positions: ", nTotalPositions))
-  finalDensity <- (numberOfIndividualsPresent / nTotalPositions) 
+  print(paste("Number of indviduals in space: ", numberOfIndividualsPresent))
+  print(paste("total positions: ", nTotalPositions))
+  finalDensity <- ((numberOfIndividualsPresent / nTotalPositions)  + (numberOfIndividualsPresent/nIndividuals))
   return(finalDensity)
 
 }
-
 
 # Determines the density value for each agent in the swarm.
 find.Neighbors <- function() {
@@ -119,8 +117,16 @@ find.Neighbors <- function() {
 }
 find.Neighbors()
 
-meanDensity <- (sum(arena.Data$Density) / nIndividuals ) 
-sdDensity <- (sd(arena.Data$Density)) 
+densityTotal <- 0
+tempDensityArray <- c()
+
+for(var in 1:nIndividuals) {
+  densityTotal <- densityTotal + arena.Data$Density[var] 
+  tempDensityArray[var] <- arena.Data$Density[var] 
+}
+
+meanDensity <- (densityTotal / nIndividuals) 
+sdDensity <- (sd(tempDensityArray)) 
 
 
 sdDistance <- function(value, mean, sd) {
@@ -128,19 +134,18 @@ sdDistance <- function(value, mean, sd) {
   return(temp)
 }
 
-
 determine.density.distance <- function(mean, sd) {
  for (var in 1:nIndividuals){
+    print(paste("Mean: ", mean))
+    print(paste("SD: ", sd))
    arena.Data$DensityDistance[var] <<- sdDistance(arena.Data$Density[var], mean, sd)
-
  }
 }
 
 determine.density.distance(meanDensity, sdDensity)
 
 
-
-
+# Translates a value 1-360 into x and y "direction"
 determineThetaDirection <- function(currentTheta) {
   if ((currentTheta > 0) && (currentTheta < 90)) {
     xDir <- 1
@@ -181,26 +186,32 @@ determineThetaDirection <- function(currentTheta) {
     xDir <- 1
     yDir <- 0
   }
-
   result <- c(xDir,yDir)
-
   return(result)
 }
-
-
+ 
+# moves each agent in the swarm a fixed distance in a direction based on its theta.
 step.swarm <- function() {
   
   for (var in 1:nIndividuals) {
-
+    
     dirMult <- determineThetaDirection(arena.Data$theta[var])
 
-    arena.Data$xPosition[var] <<- (dirMult[1] * baseMovementRate) + arena.Data$xPosition[var]
-    arena.Data$yPosition[var] <<- (dirMult[2] * baseMovementRate)  + arena.Data$yPosition[var]
-  }
+    if(((dirMult[1] * baseMovementRate) + arena.Data$xPosition[var] >= size) || ((dirMult[1] * baseMovementRate) + arena.Data$xPosition[var] <= 0)) {
+      arena.Data$xPosition[var] <<- ((dirMult[1] * -1) * baseMovementRate) + arena.Data$xPosition[var]
+      } else {
+        arena.Data$xPosition[var] <<- (dirMult[1] * baseMovementRate) + arena.Data$xPosition[var]
+      } 
   
+    if(((dirMult[2] * baseMovementRate) + arena.Data$yPosition[var] >= size) || ((dirMult[2] * baseMovementRate) + arena.Data$yPosition[var] <= 0)) {
+      arena.Data$yPosition[var] <<- ((dirMult[2] * -1) * baseMovementRate) + arena.Data$yPosition[var]
+    } else {
+      arena.Data$yPosition[var] <<- (dirMult[2] * baseMovementRate)  + arena.Data$yPosition[var]
+    }     
+    
+  }
   arenaSim <- display.swarm()
   arenaSim
-
 }
 
 
