@@ -19,6 +19,7 @@ baseMovementRate <- 4
 densitySensitivity <- 75
 spatialDistribution <- 150
 thetaDistribution <- 50
+step.iterations <- 200
 
 # GENERATING AN ARENA
 create.arena <- function(xLength, yLength) {
@@ -136,8 +137,8 @@ sdDistance <- function(value, mean, sd) {
 
 determine.density.distance <- function(mean, sd) {
  for (var in 1:nIndividuals){
-    print(paste("Mean: ", mean))
-    print(paste("SD: ", sd))
+    # print(paste("Mean: ", mean))
+    # print(paste("SD: ", sd))
    arena.Data$DensityDistance[var] <<- sdDistance(arena.Data$Density[var], mean, sd)
  }
 }
@@ -194,28 +195,52 @@ determineThetaDirection <- function(currentTheta) {
 step.swarm <- function() {
   
   for (var in 1:nIndividuals) {
+
+    if(arena.Data$DensityDistance[var] == 0) {
+        movementRate <- baseMovementRate/2
+    } else if (arena.Data$DensityDistance[var] == 1) {
+        movementRate <- baseMovementRate
+    } else if (arena.Data$DensityDistance[var] == 2) {
+        movementRate <- baseMovementRate + 2
+    } else { 
+        movementRate <- baseMovementRate + 4
+    }
     
     dirMult <- determineThetaDirection(arena.Data$theta[var])
 
-    if(((dirMult[1] * baseMovementRate) + arena.Data$xPosition[var] >= size) || ((dirMult[1] * baseMovementRate) + arena.Data$xPosition[var] <= 0)) {
-      arena.Data$xPosition[var] <<- ((dirMult[1] * -1) * baseMovementRate) + arena.Data$xPosition[var]
+    if(((dirMult[1] * movementRate) + arena.Data$xPosition[var] >= size) || ((dirMult[1] * movementRate) + arena.Data$xPosition[var] <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      dirMult <- determineThetaDirection(arena.Data$theta[var])
+      arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
       } else {
-        arena.Data$xPosition[var] <<- (dirMult[1] * baseMovementRate) + arena.Data$xPosition[var]
+        arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
       } 
   
-    if(((dirMult[2] * baseMovementRate) + arena.Data$yPosition[var] >= size) || ((dirMult[2] * baseMovementRate) + arena.Data$yPosition[var] <= 0)) {
-      arena.Data$yPosition[var] <<- ((dirMult[2] * -1) * baseMovementRate) + arena.Data$yPosition[var]
+    if(((dirMult[2] * movementRate) + arena.Data$yPosition[var] >= size) || ((dirMult[2] * movementRate) + arena.Data$yPosition[var] <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      dirMult <- determineThetaDirection(arena.Data$theta[var])
+      arena.Data$yPosition[var] <<- (dirMult[2] * movementRate) + arena.Data$yPosition[var]
     } else {
-      arena.Data$yPosition[var] <<- (dirMult[2] * baseMovementRate)  + arena.Data$yPosition[var]
+      arena.Data$yPosition[var] <<- (dirMult[2] * movementRate)  + arena.Data$yPosition[var]
     }     
     
   }
-  arenaSim <- display.swarm()
-  arenaSim
+  # arenaSim <- display.swarm()
+  # arenaSim
 }
 
 
-step.swarm()
+run.simulation <- function() {
+  for(run in 1:step.iterations) {
+    step.swarm()
+  }
+}
+
+run.simulation()
+
+arenaSim <- display.swarm()
+arenaSim
+
 
 # This function runs a step of the simulation in which:
   # - Each agent asses how close it is to other agents 
