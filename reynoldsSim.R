@@ -99,8 +99,8 @@ determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
     count <- count + 1
   }
 
-  print(paste("Number of indviduals in space: ", numberOfIndividualsPresent))
-  print(paste("total positions: ", nTotalPositions))
+  # print(paste("Number of indviduals in space: ", numberOfIndividualsPresent))
+  # print(paste("total positions: ", nTotalPositions))
   finalDensity <- ((numberOfIndividualsPresent / nTotalPositions)  + (numberOfIndividualsPresent/nIndividuals))
   return(finalDensity)
 
@@ -111,7 +111,7 @@ find.Neighbors <- function() {
   count <- 1
   for (var in 1:nIndividuals) {
     result <- determine.density(densitySensitivity,densitySensitivity,arena.Data$xPosition[count], arena.Data$yPosition[count])
-    print(result)
+    # print(result)
     arena.Data$Density[count] <<- result 
     count <- count + 1
   }
@@ -196,7 +196,7 @@ step.swarm <- function() {
   
   for (var in 1:nIndividuals) {
 
-    if(arena.Data$DensityDistance[var] == 0) {
+    if ((arena.Data$DensityDistance[var]) == 0) {
         movementRate <- baseMovementRate/2
     } else if (arena.Data$DensityDistance[var] == 1) {
         movementRate <- baseMovementRate
@@ -223,8 +223,24 @@ step.swarm <- function() {
     } else {
       arena.Data$yPosition[var] <<- (dirMult[2] * movementRate)  + arena.Data$yPosition[var]
     }     
-    
+  
+
   }
+
+  find.Neighbors()
+
+  densityTotal <- 0
+  tempDensityArray <- c()
+
+  for(var in 1:nIndividuals) {
+    densityTotal <- densityTotal + arena.Data$Density[var] 
+    tempDensityArray[var] <- arena.Data$Density[var] 
+  }
+
+  meanDensity <- (densityTotal / nIndividuals) 
+  sdDensity <- (sd(tempDensityArray)) 
+  
+  determine.density.distance(meanDensity, sdDensity)
   # arenaSim <- display.swarm()
   # arenaSim
 }
@@ -252,9 +268,7 @@ arenaSim
 #   #   nextX <- rep(0,nIndividuals),
 #   #   nextY <- rep(0,nIndividuals),
 #   #   nextTheta <- rep(0, nIndividuals)
-#   # )
-
-
+#   # ) 
 # }
 
 # BEHAVIOR PRIMITIVES:
