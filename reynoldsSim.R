@@ -21,7 +21,7 @@ spatialDistribution <- 150
 thetaDistribution <- 50
 step.iterations <- 200
 
-# GENERATING AN ARENA
+# Create the arena using the arena.data frame.
 create.arena <- function(xLength, yLength) {
   xLimit <- xLength 
   yLimit <- yLength
@@ -41,7 +41,7 @@ create.arena <- function(xLength, yLength) {
 }
 arenaSim <- create.arena(xVal, yVal)
 
-# INITIALIZE THE SWARM POPULATION
+# Initialize the swarm population using mean values.
 initialize.swarm <- function(cohesion, avoidance, spatial.distribution.factor, theta.distribution.factor ,coordinateLocation) {
     arena.Data$index <<- c(1:nIndividuals)
     arena.Data$swarm.cohesion <<- rep(swarmCohesion,nIndividuals)
@@ -60,6 +60,7 @@ initialize.swarm <- function(cohesion, avoidance, spatial.distribution.factor, t
 # Display the swarm in the 2D arena.
 initialize.swarm(swarmCohesion, swarmAvoidance, spatialDistribution, thetaDistribution, centerCor)
 
+# Function that updates the current arena with the swarm's current location.
 display.swarm <- function() {
   return(arenaSim + geom_point(aes(arena.Data$xPosition, arena.Data$yPosition)))
 }
@@ -68,6 +69,7 @@ arenaSim <- display.swarm()
 arenaSim
 
 
+# Function to determine an individual's sensed density value.
 determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
 
   nTotalPositions <- ((senseHeight * senseWidth) * 4)
@@ -129,75 +131,31 @@ for(var in 1:nIndividuals) {
 meanDensity <- (densityTotal / nIndividuals) 
 sdDensity <- (sd(tempDensityArray)) 
 
-
+# Function used to determine how far from the mean an individuals density score is.
 sdDistance <- function(value, mean, sd) {
   temp <- abs(mean - value) %/% sd
   return(temp)
 }
 
+# Assign individual density values.
 determine.density.distance <- function(mean, sd) {
  for (var in 1:nIndividuals){
-    # print(paste("Mean: ", mean))
-    # print(paste("SD: ", sd))
    arena.Data$DensityDistance[var] <<- sdDistance(arena.Data$Density[var], mean, sd)
  }
 }
 
 determine.density.distance(meanDensity, sdDensity)
 
+# Function for converting degrees to radians, used in computing the new X,Y coor for each agent.
+degreeToRadians <- function(angle) {
+  return(pi * angle / 180);
+} 
 
-# Translates a value 1-360 into x and y "direction"
-determineThetaDirection <- function(currentTheta) {
-  if ((currentTheta > 0) && (currentTheta < 90)) {
-    xDir <- 1
-    yDir <- -1
-    # REGION 1
-    # Down to the right, so y is decreasing, x is increasing.
-  } else if((currentTheta > 89) && (currentTheta < 91)) {
-    xDir <- 0
-    yDir <- -1
-    # DOWN
-    # Downwards, so y is decreasing, x stays the same.
-  } else if((currentTheta > 91)  && (currentTheta < 179)) {
-    xDir <- -1
-    yDir <- -1
-    # REGION 2
-    # Down to the left, so y is decreasing, x is decreasing.
-  } else if((currentTheta > 179.0) && (currentTheta < 181.00)) {
-    xDir <- -1
-    yDir <- 0
-    # LEFT
-    # To the left, so y is staying the same, x is decreasing.
-  } else if((currentTheta > 181.0) && (currentTheta < 269.0)) {
-    xDir <- -1
-    yDir <- 1
-    # REGION 3
-    # Upwards to the left, so Y is increasing, x is decreasing
-  } else if((currentTheta > 269.0) && (currentTheta < 271.0)) {
-    xDir <- 0
-    yDir <- 1
-    # UP
-    # Upwards, so x is staying the same, y is increasing
-  } else if(currentTheta > 271) {
-    xDir <- 1
-    yDir <- 1
-    # REGION 4
-    # Upwards to the right, so x is increaing, y is increasing
-  } else if(currentTheta >= 359.0 && currentTheta <= 360) {
-    xDir <- 1
-    yDir <- 0
-  }
-  result <- c(xDir,yDir)
-  return(result)
-}
- 
-# moves each agent in the swarm a fixed distance in a direction based on its theta.
-step.swarm <- function() {
-  
-  for (var in 1:nIndividuals) {
+# Computes the next x,y coor for x individual in the swarm based on its density reading.
+compute.nextPos <- function(var) {
 
     if ((arena.Data$DensityDistance[var]) == 0) {
-        movementRate <- baseMovementRate/2
+        movementRate <- baseMovementRate/3
     } else if (arena.Data$DensityDistance[var] == 1) {
         movementRate <- baseMovementRate
     } else if (arena.Data$DensityDistance[var] == 2) {
@@ -205,30 +163,44 @@ step.swarm <- function() {
     } else { 
         movementRate <- baseMovementRate + 4
     }
-    
-    dirMult <- determineThetaDirection(arena.Data$theta[var])
+     
+    newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
 
-    if(((dirMult[1] * movementRate) + arena.Data$xPosition[var] >= size) || ((dirMult[1] * movementRate) + arena.Data$xPosition[var] <= 0)) {
+
+    ## Collision with walls
+    if((newX >= size) || (newX <= 0)) {
       arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
-      dirMult <- determineThetaDirection(arena.Data$theta[var])
-      arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
-      } else {
-        arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
-      } 
-  
-    if(((dirMult[2] * movementRate) + arena.Data$yPosition[var] >= size) || ((dirMult[2] * movementRate) + arena.Data$yPosition[var] <= 0)) {
-      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
-      dirMult <- determineThetaDirection(arena.Data$theta[var])
-      arena.Data$yPosition[var] <<- (dirMult[2] * movementRate) + arena.Data$yPosition[var]
+      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
     } else {
-      arena.Data$yPosition[var] <<- (dirMult[2] * movementRate)  + arena.Data$yPosition[var]
-    }     
+      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    } 
   
+    if((newY >= size) || (newY <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+    } else {
+      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+    }    
 
+  nextPos <- c(newX, newY)
+
+}
+ 
+# moves each agent in the swarm a fixed distance in a direction based on its theta.
+step.swarm <- function() {
+  
+  for (ind in 1:nIndividuals) {
+    # Computes tehe next x,y position for the current individual.
+    result <- compute.nextPos(ind) 
+    arena.Data$xPosition[ind] <<- result[1]
+    arena.Data$yPosition[ind] <<- result[2]
   }
 
+  # Recalculate the sensed denisty value for each agent.
   find.Neighbors()
 
+  # Process density data.
   densityTotal <- 0
   tempDensityArray <- c()
 
@@ -240,20 +212,20 @@ step.swarm <- function() {
   meanDensity <- (densityTotal / nIndividuals) 
   sdDensity <- (sd(tempDensityArray)) 
   
+  # Assign a density distance to each individual.
   determine.density.distance(meanDensity, sdDensity)
-  # arenaSim <- display.swarm()
-  # arenaSim
 }
 
 
+# Applys the step function n step.iterations.
 run.simulation <- function() {
   for(run in 1:step.iterations) {
     step.swarm()
   }
 }
-
 run.simulation()
 
+# Display the swarm after running simulation.
 arenaSim <- display.swarm()
 arenaSim
 
@@ -301,5 +273,77 @@ arenaSim
 # heat.map <- create.heatmap(xVal,yVal)
 
 
+# Old way of interpreting theta direction
 
+    # if ((arena.Data$DensityDistance[var]) == 0) {
+    #     movementRate <- baseMovementRate/2
+    # } else if (arena.Data$DensityDistance[var] == 1) {
+    #     movementRate <- baseMovementRate
+    # } else if (arena.Data$DensityDistance[var] == 2) {
+    #     movementRate <- baseMovementRate + 2
+    # } else { 
+    #     movementRate <- baseMovementRate + 4
+    # }
+    
+    # dirMult <- determineThetaDirection(arena.Data$theta[var])
 
+    # if(((dirMult[1] * movementRate) + arena.Data$xPosition[var] >= size) || ((dirMult[1] * movementRate) + arena.Data$xPosition[var] <= 0)) {
+    #   arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+    #   dirMult <- determineThetaDirection(arena.Data$theta[var])
+    #   arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
+    #   } else {
+    #     arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
+    #   } 
+  
+    # if(((dirMult[2] * movementRate) + arena.Data$yPosition[var] >= size) || ((dirMult[2] * movementRate) + arena.Data$yPosition[var] <= 0)) {
+    #   arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+    #   dirMult <- determineThetaDirection(arena.Data$theta[var])
+    #   arena.Data$yPosition[var] <<- (dirMult[2] * movementRate) + arena.Data$yPosition[var]
+    # } else {
+    #   arena.Data$yPosition[var] <<- (dirMult[2] * movementRate)  + arena.Data$yPosition[var]
+    # }    
+
+    # Translates a value 1-360 into x and y "direction"
+# determineThetaDirection <- function(currentTheta) {
+#   if ((currentTheta > 0) && (currentTheta < 90)) {
+#     xDir <- 1
+#     yDir <- -1
+#     # REGION 1
+#     # Down to the right, so y is decreasing, x is increasing.
+#   } else if((currentTheta > 89) && (currentTheta < 91)) {
+#     xDir <- 0
+#     yDir <- -1
+#     # DOWN
+#     # Downwards, so y is decreasing, x stays the same.
+#   } else if((currentTheta > 91)  && (currentTheta < 179)) {
+#     xDir <- -1
+#     yDir <- -1
+#     # REGION 2
+#     # Down to the left, so y is decreasing, x is decreasing.
+#   } else if((currentTheta > 179.0) && (currentTheta < 181.00)) {
+#     xDir <- -1
+#     yDir <- 0
+#     # LEFT
+#     # To the left, so y is staying the same, x is decreasing.
+#   } else if((currentTheta > 181.0) && (currentTheta < 269.0)) {
+#     xDir <- -1
+#     yDir <- 1
+#     # REGION 3
+#     # Upwards to the left, so Y is increasing, x is decreasing
+#   } else if((currentTheta > 269.0) && (currentTheta < 271.0)) {
+#     xDir <- 0
+#     yDir <- 1
+#     # UP
+#     # Upwards, so x is staying the same, y is increasing
+#   } else if(currentTheta > 271) {
+#     xDir <- 1
+#     yDir <- 1
+#     # REGION 4
+#     # Upwards to the right, so x is increaing, y is increasing
+#   } else if(currentTheta >= 359.0 && currentTheta <= 360) {
+#     xDir <- 1
+#     yDir <- 0
+#   }
+#   result <- c(xDir,yDir)
+#   return(result)
+# }
