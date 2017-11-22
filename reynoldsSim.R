@@ -223,127 +223,41 @@ run.simulation <- function() {
     step.swarm()
   }
 }
-run.simulation()
+# run.simulation()
 
 # Display the swarm after running simulation.
 arenaSim <- display.swarm()
 arenaSim
 
-
-# This function runs a step of the simulation in which:
-  # - Each agent asses how close it is to other agents 
-  # - Each agent determines where it will move next
-# step.swarm <- function() {
-
-#   # temp.Data <- data.frame(
-#   #   index <- c(1:nIndividuals),
-#   #   nextX <- rep(0,nIndividuals),
-#   #   nextY <- rep(0,nIndividuals),
-#   #   nextTheta <- rep(0, nIndividuals)
-#   # ) 
-# }
-
 # BEHAVIOR PRIMITIVES:
 
-# # HEATMAP GENERATION
-# # Assign a value to a location given how far away it is from the center. The farther the smaller the value.
-# assign.location.value <- function(center, currentLocation, distribution.type) {
-#   rowDiff <- abs(center[1] - currentLocation[1])
-#   columnDiff <- abs(center[2] - currentLocation[2])
-#   totalDifference <- rowDiff + columnDiff
-#   scaledDifference <- 1 - (distribution.type(totalDifference)/distribution.type(center[1] * 2))
-#   return(scaledDifference)
-# }
-# # Distribution of values around the center of the arena.
-# value.distribution <- function(x) {
-#   return(x^2)
-# }
-# # Generate heat map 
-# create.heatmap <- function(arena.length, arena.width) {
-#   centerArena <- c(arena.length/2, arena.width/2)
-#   arena.heat.map <- matrix(nrow = arena.length, ncol = arena.width)
-#   for(i in 1:arena.length) {
-#     for(j in 1:arena.width) {
-#       currentIndex <- c(i,j)
-#       arena.heat.map[i,j] <- assign.location.value(centerArena, currentIndex, value.distribution)
-#     }
-#   }
-#   return(arena.heat.map)
-# }
-# heat.map <- create.heatmap(xVal,yVal)
+# HEATMAP GENERATION
+# Assign a value to a location given how far away it is from the center. The farther the smaller the value.
+assign.location.value <- function(center, currentLocation, distribution.type) {
+  rowDiff <- abs(center[1] - currentLocation[1])
+  columnDiff <- abs(center[2] - currentLocation[2])
+  totalDifference <- rowDiff + columnDiff
+  scaledDifference <- 1 - (distribution.type(totalDifference)/distribution.type(center[1] * 2))
+  return(scaledDifference)
+}
+# Distribution of values around the center of the arena.
+value.distribution <- function(x) {
+  return(x^2)
+}
+# Generate heat map 
+create.heatmap <- function(arena.length, arena.width) {
+  centerArena <- c(arena.length/2, arena.width/2)
+  arena.heat.map <- matrix(nrow = arena.length, ncol = arena.width)
+  for(i in 1:arena.length) {
+    for(j in 1:arena.width) {
+      currentIndex <- c(i,j)
+      arena.heat.map[i,j] <- assign.location.value(centerArena, currentIndex, value.distribution)
+    }
+  }
+  return(arena.heat.map)
+}
+heat.map <- create.heatmap(xVal,yVal)
 
+# Visualize the heat map
+image(heat.map)
 
-# Old way of interpreting theta direction
-
-    # if ((arena.Data$DensityDistance[var]) == 0) {
-    #     movementRate <- baseMovementRate/2
-    # } else if (arena.Data$DensityDistance[var] == 1) {
-    #     movementRate <- baseMovementRate
-    # } else if (arena.Data$DensityDistance[var] == 2) {
-    #     movementRate <- baseMovementRate + 2
-    # } else { 
-    #     movementRate <- baseMovementRate + 4
-    # }
-    
-    # dirMult <- determineThetaDirection(arena.Data$theta[var])
-
-    # if(((dirMult[1] * movementRate) + arena.Data$xPosition[var] >= size) || ((dirMult[1] * movementRate) + arena.Data$xPosition[var] <= 0)) {
-    #   arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
-    #   dirMult <- determineThetaDirection(arena.Data$theta[var])
-    #   arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
-    #   } else {
-    #     arena.Data$xPosition[var] <<- (dirMult[1] * movementRate) + arena.Data$xPosition[var]
-    #   } 
-  
-    # if(((dirMult[2] * movementRate) + arena.Data$yPosition[var] >= size) || ((dirMult[2] * movementRate) + arena.Data$yPosition[var] <= 0)) {
-    #   arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
-    #   dirMult <- determineThetaDirection(arena.Data$theta[var])
-    #   arena.Data$yPosition[var] <<- (dirMult[2] * movementRate) + arena.Data$yPosition[var]
-    # } else {
-    #   arena.Data$yPosition[var] <<- (dirMult[2] * movementRate)  + arena.Data$yPosition[var]
-    # }    
-
-    # Translates a value 1-360 into x and y "direction"
-# determineThetaDirection <- function(currentTheta) {
-#   if ((currentTheta > 0) && (currentTheta < 90)) {
-#     xDir <- 1
-#     yDir <- -1
-#     # REGION 1
-#     # Down to the right, so y is decreasing, x is increasing.
-#   } else if((currentTheta > 89) && (currentTheta < 91)) {
-#     xDir <- 0
-#     yDir <- -1
-#     # DOWN
-#     # Downwards, so y is decreasing, x stays the same.
-#   } else if((currentTheta > 91)  && (currentTheta < 179)) {
-#     xDir <- -1
-#     yDir <- -1
-#     # REGION 2
-#     # Down to the left, so y is decreasing, x is decreasing.
-#   } else if((currentTheta > 179.0) && (currentTheta < 181.00)) {
-#     xDir <- -1
-#     yDir <- 0
-#     # LEFT
-#     # To the left, so y is staying the same, x is decreasing.
-#   } else if((currentTheta > 181.0) && (currentTheta < 269.0)) {
-#     xDir <- -1
-#     yDir <- 1
-#     # REGION 3
-#     # Upwards to the left, so Y is increasing, x is decreasing
-#   } else if((currentTheta > 269.0) && (currentTheta < 271.0)) {
-#     xDir <- 0
-#     yDir <- 1
-#     # UP
-#     # Upwards, so x is staying the same, y is increasing
-#   } else if(currentTheta > 271) {
-#     xDir <- 1
-#     yDir <- 1
-#     # REGION 4
-#     # Upwards to the right, so x is increaing, y is increasing
-#   } else if(currentTheta >= 359.0 && currentTheta <= 360) {
-#     xDir <- 1
-#     yDir <- 0
-#   }
-#   result <- c(xDir,yDir)
-#   return(result)
-# }
