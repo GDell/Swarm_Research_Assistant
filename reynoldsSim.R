@@ -153,7 +153,6 @@ degreeToRadians <- function(angle) {
 
 
 
-
 # HEATMAP GENERATION
 # Assign a value to a location given how far away it is from a given center point. The farther the smaller the value.
 assign.location.value <- function(center, currentLocation, distribution.type) {
@@ -183,8 +182,6 @@ heat.map <- create.heatmap(xVal,yVal)
 
 # Visualize the heat map
 image(heat.map)
-
-
 
 
 # Computes the next x,y coor for x individual in the swarm based on its density reading.
@@ -224,6 +221,42 @@ compute.nextPos <- function(var, simulation) {
     nextPos <- c(newX, newY)
 
 
+  } else if (simulation == "reynoldsAsocial") {
+
+    if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.80) {
+        movementRate <- baseMovementRate/3
+    } else if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.60) {
+        movementRate <- baseMovementRate
+    } else if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.40) {
+        movementRate <- baseMovementRate + 2
+    } else if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.20) { 
+        movementRate <- baseMovementRate + 4
+    } else {
+        movementRate <- baseMovementRate + 6
+    }
+     
+    newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+
+
+    ## Collision with walls
+    if((newX >= size) || (newX <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    } else {
+      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    } 
+    ## Collision with walls
+    if((newY >= size) || (newY <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+    } else {
+      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+    }    
+
+    nextPos <- c(newX, newY)
+
+    #default to the original Reynolds model
   } else {
 
     if ((arena.Data$DensityDistance[var]) == 0) {
@@ -356,7 +389,7 @@ run.simulation <- function(typeSim) {
 
 }
 
-totalGsi <- run.simulation("reynoldsOriginal")
+totalGsi <- run.simulation("reynoldsAsocial")
 
 plot(totalGsi)
 
