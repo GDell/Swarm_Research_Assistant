@@ -196,16 +196,12 @@ calculate.group.distance <- function() {
   groupedDistance <- 0
 
   for(var in 1:nIndividuals) {
-
     for(varTwo in 1:nIndividuals) {
-
 
        dist <- compute.cart.distance(arena.Data$xPosition[var], arena.Data$xPosition[varTwo], arena.Data$yPosition[var], arena.Data$yPosition[varTwo])
 
        groupedDistance <- groupedDistance + dist
-
     }
-
   }
 
   return(groupedDistance)
@@ -216,13 +212,12 @@ calculate.gsi <- function(groupedDistancePrev, groupedDistanceNext) {
   finalGsi <- 1 - (((abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
 
   return(finalGsi)
-
 }
 
 
 
 
-# Computes the next x,y coor for x individual in the swarm based on its density reading.
+# Computes the next x,y coor for var individual in the swarm based on its density reading.
 compute.nextPos <- function(var, simulation) {
 
   if (simulation == "reynoldsOriginal") {
@@ -264,6 +259,7 @@ compute.nextPos <- function(var, simulation) {
     xloc <- arena.Data$xPosition[var]
     ylox <- arena.Data$yPosition[var]
 
+    # Distance from center of the arena determines movement rate.
     distCenter <-  compute.cart.distance(arena.Data$xPosition[var], size/2, arena.Data$yPosition[var], size/2)
 
     if (distCenter < size/4) {
@@ -298,42 +294,7 @@ compute.nextPos <- function(var, simulation) {
     nextPos <- c(newX, newY)
 
     #default to the original Reynolds model
-  } else {
-
-    if ((arena.Data$DensityDistance[var]) == 0) {
-        movementRate <- baseMovementRate/3
-    } else if (arena.Data$DensityDistance[var] == 1) {
-        movementRate <- baseMovementRate
-    } else if (arena.Data$DensityDistance[var] == 2) {
-        movementRate <- baseMovementRate + 2
-    } else { 
-        movementRate <- baseMovementRate + 4
-    }
-     
-    newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
-    newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
-
-
-    ## Collision with walls
-    if((newX >= size) || (newX <= 0)) {
-      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
-      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
-    } else {
-      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
-    } 
-  
-    if((newY >= size) || (newY <= 0)) {
-      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
-      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
-    } else {
-      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
-    }    
-
-    nextPos <- c(newX, newY)
-
-
-  }
-   
+  } 
 
   return(nextPos)
 
@@ -343,8 +304,6 @@ compute.nextPos <- function(var, simulation) {
  
 # moves each agent in the swarm a fixed distance in a direction based on its theta.
 step.swarm <- function(typeSimulation) {
-
-
 
   previousDistTotal <- calculate.group.distance()
   
@@ -360,8 +319,6 @@ step.swarm <- function(typeSimulation) {
 
   # Recalculate the sensed denisty value for each agent.
   find.Neighbors()
-
-  
 
   # Process density data.
   densityTotal <- 0
@@ -379,12 +336,10 @@ step.swarm <- function(typeSimulation) {
   determine.density.distance(meanDensity, sdDensity)
 
   return(calculate.gsi(previousDistTotal, nextDistTotal))
-
-
 }
 
 
-# Applys the step function n step.iterations.
+# runs the simulation provided what time of reynolds model you want to run.
 run.simulation <- function(typeSim) {
   gsiLog <- c()
 
@@ -393,10 +348,9 @@ run.simulation <- function(typeSim) {
   }
 
   return(gsiLog)
-
 }
 
-totalGsi <- run.simulation("reynoldsAsocial")
+totalGsi <- run.simulation("reynoldsOriginal")
 
 plot(totalGsi)
 
