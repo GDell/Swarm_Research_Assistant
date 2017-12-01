@@ -1,4 +1,4 @@
-# Author: Gabriel Dell'Accio
+
 # The following is a 2D variant of the Reynolds Boid model.
 # LIBRARIES:
 library(ggplot2)
@@ -184,6 +184,44 @@ heat.map <- create.heatmap(xVal,yVal)
 image(heat.map)
 
 
+
+# GSI: group stability index
+compute.cart.distance  <- function(x1,x2,y1,y2) {
+  return(sqrt(((x1-x2)^2) + ((y1-y2)^2)) )
+}
+
+
+calculate.group.distance <- function() {
+
+  groupedDistance <- 0
+
+  for(var in 1:nIndividuals) {
+
+    for(varTwo in 1:nIndividuals) {
+
+
+       dist <- compute.cart.distance(arena.Data$xPosition[var], arena.Data$xPosition[varTwo], arena.Data$yPosition[var], arena.Data$yPosition[varTwo])
+
+       groupedDistance <- groupedDistance + dist
+
+    }
+
+  }
+
+  return(groupedDistance)
+}
+
+calculate.gsi <- function(groupedDistancePrev, groupedDistanceNext) {
+
+  finalGsi <- 1 - (((abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
+
+  return(finalGsi)
+
+}
+
+
+
+
 # Computes the next x,y coor for x individual in the swarm based on its density reading.
 compute.nextPos <- function(var, simulation) {
 
@@ -223,14 +261,17 @@ compute.nextPos <- function(var, simulation) {
 
   } else if (simulation == "reynoldsAsocial") {
 
-    if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.80) {
+    xloc <- arena.Data$xPosition[var]
+    ylox <- arena.Data$yPosition[var]
+
+    distCenter <-  compute.cart.distance(arena.Data$xPosition[var], size/2, arena.Data$yPosition[var], size/2)
+
+    if (distCenter < size/4) {
         movementRate <- baseMovementRate/3
-    } else if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.60) {
+    } else if (distCenter > size/4 && distCenter < size/3) {
         movementRate <- baseMovementRate
-    } else if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.40) {
+    } else if (distCenter > size/3 && distCenter < size/2) {
         movementRate <- baseMovementRate + 2
-    } else if ((heat.map[arena.Data$xPosition[var],arena.Data$yPosition[var]]) > 0.20) { 
-        movementRate <- baseMovementRate + 4
     } else {
         movementRate <- baseMovementRate + 6
     }
@@ -299,40 +340,6 @@ compute.nextPos <- function(var, simulation) {
 }
 
 
-# GSI: group stability index
-compute.cart.distance  <- function(x1,x2) {
-  return(sqrt(sum((x1-x2)^2)))
-}
-
-
-calculate.group.distance <- function() {
-
-  groupedDistance <- 0
-
-  for(var in 1:nIndividuals) {
-
-    for(varTwo in 1:nIndividuals) {
-
-       dist <- compute.cart.distance(arena.Data$xPosition[var], arena.Data$yPosition[var])
-
-       groupedDistance <- groupedDistance + dist
-
-    }
-
-  }
-
-  return(groupedDistance)
-}
-
-calculate.gsi <- function(groupedDistancePrev, groupedDistanceNext) {
-
-  finalGsi <- (((abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
-
-  return(finalGsi)
-
-}
-
-
  
 # moves each agent in the swarm a fixed distance in a direction based on its theta.
 step.swarm <- function(typeSimulation) {
@@ -396,5 +403,4 @@ plot(totalGsi)
 # Display the swarm after running simulation.
 arenaSim <- display.swarm()
 arenaSim
-
 
