@@ -267,8 +267,35 @@ compute.nextPos <- function(var, simulation) {
 
 
 # GSI: group stability index
+compute.cart.distance  <- function(x1,x2) {
+  return(sqrt(sum((x1-x2)^2)))
+}
 
-compute.cart.distance  <- function(loc) {
+
+calculate.group.distance <- function() {
+
+  groupedDistance <- 0
+
+  for(var in 1:nIndividuals) {
+
+    for(varTwo in 1:nIndividuals) {
+
+       dist <- compute.cart.distance(arena.Data$xPosition[var], arena.Data$yPosition[var])
+
+       groupedDistance <- groupedDistance + dist
+
+    }
+
+  }
+
+  return(groupedDistance)
+}
+
+calculate.gsi <- function(groupedDistancePrev, groupedDistanceNext) {
+
+  finalGsi <- (((abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
+
+  return(finalGsi)
 
 }
 
@@ -276,16 +303,25 @@ compute.cart.distance  <- function(loc) {
  
 # moves each agent in the swarm a fixed distance in a direction based on its theta.
 step.swarm <- function(typeSimulation) {
+
+
+
+  previousDistTotal <- calculate.group.distance()
   
   for (ind in 1:nIndividuals) {
     # Computes tehe next x,y position for the current individual.
+
     result <- compute.nextPos(ind, typeSimulation) 
     arena.Data$xPosition[ind] <<- result[1]
     arena.Data$yPosition[ind] <<- result[2]
   }
 
+  nextDistTotal <- calculate.group.distance()
+
   # Recalculate the sensed denisty value for each agent.
   find.Neighbors()
+
+  
 
   # Process density data.
   densityTotal <- 0
@@ -301,16 +337,28 @@ step.swarm <- function(typeSimulation) {
   
   # Assign a density distance to each individual.
   determine.density.distance(meanDensity, sdDensity)
+
+  return(calculate.gsi(previousDistTotal, nextDistTotal))
+
+
 }
 
 
 # Applys the step function n step.iterations.
 run.simulation <- function(typeSim) {
+  gsiLog <- c()
+
   for(run in 1:step.iterations) {
-    step.swarm(typeSim)
+    gsiLog[run] <- step.swarm(typeSim)
   }
+
+  return(gsiLog)
+
 }
-run.simulation("reynoldsOriginal")
+
+totalGsi <- run.simulation("reynoldsOriginal")
+
+plot(totalGsi)
 
 # Display the swarm after running simulation.
 arenaSim <- display.swarm()
