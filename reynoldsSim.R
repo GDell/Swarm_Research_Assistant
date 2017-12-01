@@ -17,7 +17,7 @@ swarmCohesion <- 0.5
 swarmAvoidance <- 0.5
 baseMovementRate <- 4
 densitySensitivity <- 75
-spatialDistribution <- 150
+spatialDistribution <- 100
 thetaDistribution <- 50
 step.iterations <- 200
 
@@ -151,8 +151,80 @@ degreeToRadians <- function(angle) {
   return(pi * angle / 180);
 } 
 
+
+
+
+# HEATMAP GENERATION
+# Assign a value to a location given how far away it is from a given center point. The farther the smaller the value.
+assign.location.value <- function(center, currentLocation, distribution.type) {
+  rowDiff <- abs(center[1] - currentLocation[1])
+  columnDiff <- abs(center[2] - currentLocation[2])
+  totalDifference <- rowDiff + columnDiff
+  scaledDifference <- 1 - (distribution.type(totalDifference)/distribution.type(center[1] * 2))
+  return(scaledDifference)
+}
+# Distribution of values around the center of the arena.
+value.distribution <- function(x) {
+  return(x^2)
+}
+# Generate heat map 
+create.heatmap <- function(arena.length, arena.width) {
+  centerArena <- c(arena.length/2, arena.width/2)
+  arena.heat.map <- matrix(nrow = arena.length, ncol = arena.width)
+  for(i in 1:arena.length) {
+    for(j in 1:arena.width) {
+      currentIndex <- c(i,j)
+      arena.heat.map[i,j] <- assign.location.value(centerArena, currentIndex, value.distribution)
+    }
+  }
+  return(arena.heat.map)
+}
+heat.map <- create.heatmap(xVal,yVal)
+
+# Visualize the heat map
+image(heat.map)
+
+
+
+
 # Computes the next x,y coor for x individual in the swarm based on its density reading.
-compute.nextPos <- function(var) {
+compute.nextPos <- function(var, simulation) {
+
+  if (simulation == "reynoldsOriginal") {
+
+     if ((arena.Data$DensityDistance[var]) == 0) {
+        movementRate <- baseMovementRate/3
+    } else if (arena.Data$DensityDistance[var] == 1) {
+        movementRate <- baseMovementRate
+    } else if (arena.Data$DensityDistance[var] == 2) {
+        movementRate <- baseMovementRate + 2
+    } else { 
+        movementRate <- baseMovementRate + 4
+    }
+     
+    newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+
+
+    ## Collision with walls
+    if((newX >= size) || (newX <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    } else {
+      newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
+    } 
+  
+    if((newY >= size) || (newY <= 0)) {
+      arena.Data$theta[var] <<- abs(180 - arena.Data$theta[var]) 
+      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+    } else {
+      newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
+    }    
+
+    nextPos <- c(newX, newY)
+
+
+  } else {
 
     if ((arena.Data$DensityDistance[var]) == 0) {
         movementRate <- baseMovementRate/3
@@ -183,16 +255,31 @@ compute.nextPos <- function(var) {
       newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
     }    
 
-  nextPos <- c(newX, newY)
+    nextPos <- c(newX, newY)
+
+
+  }
+   
+
+  return(nextPos)
 
 }
+
+
+# GSI: group stability index
+
+compute.cart.distance  <- function(loc) {
+
+}
+
+
  
 # moves each agent in the swarm a fixed distance in a direction based on its theta.
-step.swarm <- function() {
+step.swarm <- function(typeSimulation) {
   
   for (ind in 1:nIndividuals) {
     # Computes tehe next x,y position for the current individual.
-    result <- compute.nextPos(ind) 
+    result <- compute.nextPos(ind, typeSimulation) 
     arena.Data$xPosition[ind] <<- result[1]
     arena.Data$yPosition[ind] <<- result[2]
   }
@@ -218,46 +305,15 @@ step.swarm <- function() {
 
 
 # Applys the step function n step.iterations.
-run.simulation <- function() {
+run.simulation <- function(typeSim) {
   for(run in 1:step.iterations) {
-    step.swarm()
+    step.swarm(typeSim)
   }
 }
-# run.simulation()
+run.simulation("reynoldsOriginal")
 
 # Display the swarm after running simulation.
 arenaSim <- display.swarm()
 arenaSim
 
-# BEHAVIOR PRIMITIVES:
-
-# HEATMAP GENERATION
-# Assign a value to a location given how far away it is from the center. The farther the smaller the value.
-assign.location.value <- function(center, currentLocation, distribution.type) {
-  rowDiff <- abs(center[1] - currentLocation[1])
-  columnDiff <- abs(center[2] - currentLocation[2])
-  totalDifference <- rowDiff + columnDiff
-  scaledDifference <- 1 - (distribution.type(totalDifference)/distribution.type(center[1] * 2))
-  return(scaledDifference)
-}
-# Distribution of values around the center of the arena.
-value.distribution <- function(x) {
-  return(x^2)
-}
-# Generate heat map 
-create.heatmap <- function(arena.length, arena.width) {
-  centerArena <- c(arena.length/2, arena.width/2)
-  arena.heat.map <- matrix(nrow = arena.length, ncol = arena.width)
-  for(i in 1:arena.length) {
-    for(j in 1:arena.width) {
-      currentIndex <- c(i,j)
-      arena.heat.map[i,j] <- assign.location.value(centerArena, currentIndex, value.distribution)
-    }
-  }
-  return(arena.heat.map)
-}
-heat.map <- create.heatmap(xVal,yVal)
-
-# Visualize the heat map
-image(heat.map)
 
