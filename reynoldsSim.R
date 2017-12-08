@@ -12,6 +12,8 @@ centerCor <- rep(size/2,2)
 xVal <- size
 yVal <- size
 
+
+# Set swarm parameters.
 nIndividuals <- 100 
 swarmCohesion <- 0.5
 swarmAvoidance <- 0.5
@@ -69,8 +71,8 @@ arenaSim <- display.swarm()
 arenaSim
 
 
-# Function to determine an individual's sensed density value.
-determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
+# Function to determine an individual's sensed density values.
+determine.density <- function(senseHeight, senseWidth, locationX, locationY, thetaGiven) {
 
   nTotalPositions <- ((senseHeight * senseWidth) * 4)
 
@@ -87,6 +89,12 @@ determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
 
 
   count <- 1
+
+  checkCount <- 1
+
+  tempLocalThetas <- c()
+
+
   for(indOne in 1:nIndividuals) {
 
     if((arena.Data$xPosition[count] <= endX) && (arena.Data$xPosition[count] >= startX)) {
@@ -95,16 +103,32 @@ determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
 
       if((arena.Data$yPosition[count] <= endY) && (arena.Data$yPosition[count] >= startY)) {
         numberOfIndividualsPresent <- numberOfIndividualsPresent + 1
+      
+
+        tempLocalThetas[checkCount] <- arena.Data$theta[count]
+        checkCount <- checkCount + 1
       }
     }
 
     count <- count + 1
   }
 
-  # print(paste("Number of indviduals in space: ", numberOfIndividualsPresent))
-  # print(paste("total positions: ", nTotalPositions))
+
+
   finalDensity <- ((numberOfIndividualsPresent / nTotalPositions)  + (numberOfIndividualsPresent/nIndividuals))
-  return(finalDensity)
+
+  # print(tempLocalThetas)
+
+  if(length(tempLocalThetas) > 0) {
+    averageTheta <- mean(tempLocalThetas)
+    } else {
+    averageTheta <- arena.Data$theta[thetaGiven]
+  }
+ 
+  
+
+  returnList <- c(finalDensity, averageTheta)
+  return(returnList)
 
 }
 
@@ -112,9 +136,10 @@ determine.density <- function(senseHeight, senseWidth, locationX, locationY) {
 find.Neighbors <- function() {
   count <- 1
   for (var in 1:nIndividuals) {
-    result <- determine.density(densitySensitivity,densitySensitivity,arena.Data$xPosition[count], arena.Data$yPosition[count])
+    result <- determine.density(densitySensitivity,densitySensitivity,arena.Data$xPosition[count], arena.Data$yPosition[count], arena.Data$theta[count])
     # print(result)
-    arena.Data$Density[count] <<- result 
+    arena.Data$Density[count] <<- result[1] 
+    arena.Data$avgLocalTheta[count] <<- result[2]
     count <- count + 1
   }
 }
@@ -152,7 +177,6 @@ degreeToRadians <- function(angle) {
 } 
 
 
-
 # HEATMAP GENERATION
 # Assign a value to a location given how far away it is from a given center point. The farther the smaller the value.
 assign.location.value <- function(center, currentLocation, distribution.type) {
@@ -178,12 +202,10 @@ create.heatmap <- function(arena.length, arena.width) {
   }
   return(arena.heat.map)
 }
-heat.map <- create.heatmap(xVal,yVal)
+# heat.map <- create.heatmap(xVal,yVal)
 
 # Visualize the heat map
-image(heat.map)
-
-
+# image(heat.map)
 
 # GSI: group stability index
 compute.cart.distance  <- function(x1,x2,y1,y2) {
@@ -216,13 +238,46 @@ calculate.gsi <- function(groupedDistancePrev, groupedDistanceNext) {
 
 
 
+return.new.theta <- function(avgTheta) {
+
+
+  result <- rnorm(1, avgTheta, 1)
+
+  if (result > 360.0) {
+    result <- 359
+  } else if (result < 0.0) {
+    result <- 1
+  }
+
+  return(result)
+
+}
+
+
+determine.angle.center <- function(var) {
+
+  xCenter <- centerCor[1]
+  yCenter <- centerCor[2]
+
+  xInd <- arena.Data$xPosition[var]
+  yInd <- arena.Data$yPosition[var]
+
+  m <- ( yInd - yCenter ) / ( xInd - xCenter)
+
+  thetaToCenter <- atan(m) 
+
+  return(thetaToCenter)
+
+}
+
+
 
 # Computes the next x,y coor for var individual in the swarm based on its density reading.
 compute.nextPos <- function(var, simulation) {
 
   if (simulation == "reynoldsOriginal") {
 
-     if ((arena.Data$DensityDistance[var]) == 0) {
+    if ((arena.Data$DensityDistance[var]) == 0) {
         movementRate <- baseMovementRate/3
     } else if (arena.Data$DensityDistance[var] == 1) {
         movementRate <- baseMovementRate
@@ -231,6 +286,8 @@ compute.nextPos <- function(var, simulation) {
     } else { 
         movementRate <- baseMovementRate + 4
     }
+
+    newTheta = return.new.theta(arena.Data$avgLocalTheta[var])
      
     newX = arena.Data$xPosition[var] + (movementRate * cos(degreeToRadians(arena.Data$theta[var])))
     newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
@@ -251,13 +308,16 @@ compute.nextPos <- function(var, simulation) {
       newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
     }    
 
-    nextPos <- c(newX, newY)
+    nextPos <- c(newX, newY, newTheta)
 
 
   } else if (simulation == "reynoldsAsocial") {
 
     xloc <- arena.Data$xPosition[var]
     ylox <- arena.Data$yPosition[var]
+
+
+    newTheta <- return.new.theta(determine.angle.center(var))
 
     # Distance from center of the arena determines movement rate.
     distCenter <-  compute.cart.distance(arena.Data$xPosition[var], size/2, arena.Data$yPosition[var], size/2)
@@ -291,7 +351,7 @@ compute.nextPos <- function(var, simulation) {
       newY = arena.Data$yPosition[var] + (movementRate * sin(degreeToRadians(arena.Data$theta[var])))
     }    
 
-    nextPos <- c(newX, newY)
+    nextPos <- c(newX, newY, newTheta)
 
     #default to the original Reynolds model
   } 
@@ -313,6 +373,7 @@ step.swarm <- function(typeSimulation) {
     result <- compute.nextPos(ind, typeSimulation) 
     arena.Data$xPosition[ind] <<- result[1]
     arena.Data$yPosition[ind] <<- result[2]
+    arena.Data$theta[ind] <<- result[3]
   }
 
   nextDistTotal <- calculate.group.distance()
@@ -350,7 +411,7 @@ run.simulation <- function(typeSim) {
   return(gsiLog)
 }
 
-totalGsi <- run.simulation("reynoldsOriginal")
+totalGsi <- run.simulation("reynoldsAsocial")
 
 plot(totalGsi)
 
