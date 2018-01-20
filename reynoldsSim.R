@@ -1,42 +1,47 @@
 
 # THE FOLLOWING IS A 2-D VARIANT OF CRAIG REYNOLDS' BOID MODEL.
 # Written by Gabriel Dell'Accio
-# Algorithm inspired by Conrad Parker's Boid's pseudocode at: 
+# Algorithm inspired by Craig Reynold's BOID algorithm and Conrad Parker's BOIDs pseudocode at: 
 # http://www.kfish.org/boids/pseudocode.html
 
 # Overview:
+#   The time.stepper() function at the end of the script takes in the number of iterations you want to run the model for.    
+#
 #   Rules for swarming
 #     1) Center of Mass: Boids are attracted to the center of the overall swarm.
 #     2) Avoidance rule: Boids avoid collision with other boids by avoiding coming within
 #        a certain distance of one another.
 #     3) Match Velocity: Boids can sense the average velocity of the swarm and do their 
 #        best to match it.
+# 
+#    GSI: Group Stability Index 
+#     # This is an index developed by Baldessare and colleagues (2003) to measure the stability of a 
+#     # swarm in their paper "Evolving mobile robots  able to display collective behaviors"
+
 
 # LIBRARIES:
 library(ggplot2)
 
 # ARENA PARAMETERS:
-  # Variable to hold the x,y center coordinate of the arena. 
+  # Variable to hold the x,y center coordinate of the graph size.
   xLength <- 2000.0
   yLength <- 2000.0
+
 
   centerCor <- rep(xLength/2,2)
 # SWARM PARAMETERS:
   # number of individuals
-  nIndividuals <- 100 
-  swarmCohesion <- 0.5
-  swarmAvoidance <- 0.5
-  baseVelocity <- 20
-  densitySensitivity <- 75
-  spatialDistribution <- 100
-  thetaDistribution <- 50
-  step.iterations <- 200
+  nIndividuals <- 100
+  # velocity that all Boid's will begin with. 
+  baseVelocity <- 10
+  # a value that increases the size of the distribution of initial locations for the swarm. 
+  spatialDistribution <- 300
+  # the number of iterations the model is run for.
+  step.iterations <- 10
 
-  # velocityList <- vector("list", nIndividuals)
-  # print(velocityList)
-
-  xVelocity <- rep(10, nIndividuals)
-  yVelocity <- rep(10, nIndividuals)
+  # Vectors to hold the starting x,y velocities for the swarm.
+  xVelocity <- rep(baseVelocity, nIndividuals)
+  yVelocity <- rep(baseVelocity, nIndividuals)
 
   # This function creates the arena.
   create.arena <- function(xLength, yLength) {
@@ -65,12 +70,10 @@ library(ggplot2)
 
   # This function helps initialize the swarm and arena using a data frame, arena.data, 
   # that stores information about the swarm and the arena. 
-  initialize.swarm <- function(avoidance, spatial.distribution.factor,coordinateLocation) {
+  initialize.swarm <- function(spatial.distribution.factor,coordinateLocation) {
       arena.Data$index <<- c(1:nIndividuals)
       arena.Data$xPosition <<- rep(NA, xLength)
       arena.Data$yPosition <<- rep(NA, yLength)
-      # arena.Data$theta <<- rep(NA, xLength)
-      # velocityList <<- rep(baseVelocity, nIndividuals)
     
     # Create the x,y position of each individual in the swarm by drawing from a 
     # random normal distribution around a given coordinate location in the arena. 
@@ -84,7 +87,7 @@ library(ggplot2)
 
   # Call the initialize function that creates teh arena.data data frame 
   # with all previously declared swarm and arena parameters.
-  initialize.swarm(swarmAvoidance, spatialDistribution, centerCor)
+  initialize.swarm(spatialDistribution, centerCor)
 
   # Function that updates the current arena with the swarm's current location.
   display.swarm <- function() {
@@ -146,20 +149,18 @@ center.of.mass <- function(boid, count) {
   totalX <- 0
   totalY <- 0
 
-
+  # Find the average X,Y coordinate
   for(var in 1:nIndividuals) {
     totalX <- totalX + arena.Data$xPosition[var] 
     totalY <- totalY + arena.Data$yPosition[var] 
   }
-
   averageX <- totalX / nIndividuals
   averageY <- totalY / nIndividuals
 
+  # calculate the the adjusted X,Y velocity paramter to move the Boid in the direction of the center of mass.
   centerMass <- c((averageX - boid[1]/100 ), (averageY - boid[2]/100))
 
-  # print(paste("center of mass: ", centerMass))
   return(centerMass)
-
 }
 
 
@@ -168,21 +169,18 @@ avoidance.rule <- function(boid, count) {
 
   correctedCourse <- c(0,0)
 
+  # for each individual ...
   for(var in 1:nIndividuals) {
-
+    # If it it isnt the provided Boid...
     if(count != var) {
-
+      # Check to see if any other individuals are within 100 spaces
       if((abs(arena.Data$xPosition[var] - boid[1]) < 100) && (abs(arena.Data$yPosition[var] - boid[2]) < 100)) {
         b.position <- c(arena.Data$xPosition[var], arena.Data$yPosition[var])
-
+        # If there are individuals within this space, create a negative value to change the position of the BOID
         correctedCourse <- correctedCourse - (b.position - boid)
       } 
-
-
     }
   }
-
-  # print(paste("corrected avoidance: ", correctedCourse))
   return(correctedCourse)
 }
 
@@ -192,46 +190,49 @@ match.velocity <- function(boid, count) {
   meanVelocityX <- 0 
   meanVelocityY <- 0
 
+  # Calculate mean x,y velocities for the swarm 
   for(var in 1:nIndividuals) {
     meanVelocityX <- meanVelocityX + xVelocity[var]
     meanVelocityY <- meanVelocityY + yVelocity[var]  
   }
-
-
   meanVelocityX <- meanVelocityX / nIndividuals
   meanVelocityY <- meanVelocityY / nIndividuals
 
+  # Calculate the individual boid's x,y correction 
   velocityCorrectionX <- (meanVelocityX - xVelocity[count]) /8
   velocityCorrectionY <- (meanVelocityY - xVelocity[count]) /8
-
 
   return(c(velocityCorrectionX, velocityCorrectionY))
 }
  
 # This function steps the swarm one step using the the 3 behavior rules 
-# written above. The input to this function, "simVersion", is either "reynolds" 
-# or "asocial". 
+# written above. 
 compute.next.pos <- function() {
 
+  # For each Boid...
   for(var in 1:nIndividuals) {
 
+    # Store its current location
       currentIndividualLoc <- c(arena.Data$xPosition[var], arena.Data$yPosition[var])
       
-      # Rule 1
+      # Rule 1: find the average position of the swarm and calculate the individual's velocity 
+      # parameter that determines how much it moves toward the center.
       centerMassRule <- center.of.mass(currentIndividualLoc, var)
-      # Rule 2 
+      # Rule 2: calculate the velocity parameter that ensures the individual avoids moving too close
+      # to any one idividual within the swarm.
       avoidanceRule <- avoidance.rule(currentIndividualLoc, var)
-      # Rule 3
+      # Rule 3: calculate the average velocity of the swarm and find the velocity parameter that
+      # that helps match the current individuals velocity to the swarm's average velocity.
       velocityRule <- match.velocity(currentIndividualLoc, var)
       
-      
-
+      # Apply the individulas current velocity to determine its next location.
       currentIndividualLoc <- currentIndividualLoc + c(xVelocity[var],yVelocity[var])
 
+      # Change the individuals velocity as dedtermined by the 3 rules calculated above.
       xVelocity[var] <<- xVelocity[var] + centerMassRule[1] + avoidanceRule[1] + velocityRule[1]
       yVelocity[var] <<- yVelocity[var] + centerMassRule[2] + avoidanceRule[2] + velocityRule[2]
 
-
+      # Change the individuals location
       arena.Data$xPosition[var] <<- currentIndividualLoc[1]
       arena.Data$yPosition[var] <<- currentIndividualLoc[2]
   }
@@ -244,6 +245,7 @@ compute.next.pos <- function() {
 # swarm in each time step. 
 time.stepper <- function(iterations) {
 
+  # Create a vector to hold a log of the change in group stability over time.
   gsiLog <- rep(0,iterations)
 
   # For i iterations ...
@@ -252,10 +254,10 @@ time.stepper <- function(iterations) {
     # calculate total group distance at this time step 
     prevTotalDistance <- calculate.group.distance()
 
-    # Compute new positons for each individual in the swarm.
+    # Compute and apply new positons for each individual in the swarm.
     compute.next.pos()
 
-    # Calculate the total group distance after moving the swarm.
+    # Calculate the total group distance after stepping the swarm.
     nextTotalDistance <- calculate.group.distance()
 
     # Calculate the change in group stability between the previous and current 
@@ -264,12 +266,13 @@ time.stepper <- function(iterations) {
 
     # Display the swarm.
     plot(arena.Data$xPosition, arena.Data$yPosition)
+    # Sleep in order to provide R studio the opportunity to load the plot. 
     Sys.sleep(.09)
   }
   return(gsiLog)
 }
 
-finalGsi <- time.stepper(10)
+finalGsi <- time.stepper(step.iterations)
 
 plot(finalGsi)
 
