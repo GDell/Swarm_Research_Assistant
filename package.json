@@ -10,6 +10,7 @@
   "license": "BSD-2-Clause",
   "dependencies": {
     "express": "~4.16.2",
-    "gaussian": "^1.1.0"
+    "gaussian": "^1.1.0",
+    "matter-js": "^0.14.1"
   }
 }

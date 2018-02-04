@@ -20,7 +20,7 @@
 // Starting Variables
 var nIndividuals = 10
 var baseVelocity = 10
-var spatialDistribution = 400
+var spatialDistribution = 100
 var centerStart = 1000
 var nSteps = 20
 
@@ -51,6 +51,7 @@ function initializeSwarm(swarm) {
 
     var distribution = normalDist(centerStart, spatialDistribution);
 
+    // Generate x,y coordinates from the random distribution we generated.
     var tempX = distribution.ppf(Math.random());
     var tempY = distribution.ppf(Math.random());
 
@@ -60,10 +61,6 @@ function initializeSwarm(swarm) {
 
     // printBoidLocation(tempBoid)
   } 
-
-
-
-
   // console.log("Initialized Swarm:" + swarm)
   return swarm
 }
@@ -73,13 +70,10 @@ function computeCartDist(x1,x2,y1,y2) {
   var a = x1 - x2 
   var b = y1 - y2 
   var c = Math.sqrt(a*a + b*b)
-
   return c
 }
 
 function calculateGroupDist(swarm) {
-    console.log("THIS IS THE SWARMMMMMMMMMMMMMMM")
-   console.log(swarm)
   var groupedDistance = 0
   for(i=0; i<nIndividuals; i++) {
     for(j=0;j<nIndividuals; j++) {
@@ -88,15 +82,15 @@ function calculateGroupDist(swarm) {
       groupedDistance = groupedDistance + tempDist;
     } 
   }
-  console.log("Grouped distance: "+groupedDistance)
+  // console.log("Grouped distance: "+groupedDistance)
   return groupedDistance;
 }
 
 function calculateGSI(groupedDistancePrev,groupedDistanceNext) {
   // console.log(groupedDistancePrev)
   // console.log(groupedDistanceNext)
-  console.log("groupedDistancePrev: "+ groupedDistancePrev)
-  console.log("groupedDistanceNext: "+ groupedDistanceNext)
+  // console.log("groupedDistancePrev: "+ groupedDistancePrev)
+  // console.log("groupedDistanceNext: "+ groupedDistanceNext)
   var finalGSI = 1 - (((Math.abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
   console.log(finalGSI)
 
@@ -192,8 +186,8 @@ function computeNextPos(cSwarm) {
 
     var tempBoid = new boid(cSwarm[k].index, cSwarm[k].xPosition, cSwarm[k].yPosition, cSwarm[k].xvlc, cSwarm[k].yvlc);
 
-    console.log("NEW BOID")
-    console.log(tempBoid)
+    // console.log("NEW BOID")
+    // console.log(tempBoid)
     var centerMassRule = centerOfMass(tempBoid, cSwarm)
     var avoidanceRule = avoidRule(tempBoid, cSwarm)
     var velocityRule = matchVelocity(tempBoid, cSwarm)
@@ -207,16 +201,16 @@ function computeNextPos(cSwarm) {
     
     tempBoid.xPosition = tempBoidPosX
     tempBoid.yPosition = tempBoidPosY
-    console.log("NEW BOID AFTER CHANGE")
-    console.log(tempBoid)
+    // console.log("NEW BOID AFTER CHANGE")
+    // console.log(tempBoid)
     // console.log("Current ind:")
     // console.log(tempBoid)
     newSwarm.push(tempBoid)
     // cSwarm[i] = tempBoid
-    console.log("current individual after being moved: " + [tempBoid.xPosition, tempBoid.yPosition])
+    // console.log("current individual after being moved: " + [tempBoid.xPosition, tempBoid.yPosition])
   }
-  console.log("THis is the new swarm:") 
-  console.log(newSwarm)
+  // console.log("THis is the new swarm:") 
+  // console.log(newSwarm)
   return newSwarm
 }
 
@@ -276,6 +270,7 @@ function stepper(swarm) {
   var theSwarm = swarm
 
   var gsiLog = []
+  var swarmStateLog = []
 
   for(p=0;p<nSteps;p++) {
     console.log("step: "+p)
@@ -284,12 +279,13 @@ function stepper(swarm) {
     var theSwarm = result[1]
     // console.log("The swarm: " + swarm)
     gsiLog.push(result[0])
+    swarmStateLog.push(theSwarm)
     // console.log("gsi: " + gsi)
   }
 
 
 
-  return gsiLog
+  return [gsiLog, swarmStateLog]
 }
 
 
@@ -297,9 +293,10 @@ function stepper(swarm) {
 
 result = stepper(swarmArray)
 
-
-
-console.log(result)
+module.exports.experimentResult = result;
+// console.log()
+// console.log(result)
+// console.log()
 
 // console.log(GSIresult)
 
