@@ -5,14 +5,7 @@ var reynolds = require("./reynoldsSim.js");
 // var matter = require('matter-js')
 var matter = 'matter.js'
 
-
-// module aliases
-// var Engine = matter.Engine,
-//     Render = matter.Render,
-//     World = matter.World,
-//     Bodies = matter.Bodies;
-
-
+// var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });\
 //Create HTTP server and listen on port 8000 for requests
 http.createServer(function(request, response) {
 
@@ -25,7 +18,7 @@ http.createServer(function(request, response) {
 	 						<meta charset>   \
 	 							<h1>Reynolds 2D BOID model</h1> \
 	 						</head> \
-	 						<body> \
+	 						<body > \
 	 						</body>\
 	 						<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>\
 	 						<script> \
@@ -36,12 +29,17 @@ http.createServer(function(request, response) {
 							var engine = Engine.create();\
 							var render = Render.create({\
 							    element: document.body,\
-							    engine: engine\
+							    engine: engine,\
+							    options: {\
+							        width: 1500,\
+							        height: 700,\
+							        showPosition: true\
+							    }\
 							});\
-							var boxA = Bodies.rectangle(400, 200, 80, 80);\
-							var boxB = Bodies.rectangle(450, 50, 80, 80);\
-							var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });\
-							World.add(engine.world, [boxA, boxB, ground]);\
+							engine.world.gravity.y = 0; \
+							var boxA = Bodies.circle(100, 10, 80, 80);\
+							var boxB = Bodies.circle(100, 10, 80, 80);\
+							World.add(engine.world, [boxA, boxB]);\
 							Engine.run(engine);\
 							Render.run(render);\
 	 						console.log('+currentResult[0]+') \
