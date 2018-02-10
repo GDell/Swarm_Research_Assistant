@@ -5,10 +5,13 @@
 	</head> 
 
 	<body>
+		
+	 <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
 	</body>
 	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 	<!-- <script src="asocialReynolds.js"></script> -->
 	
 	<script type="text/javascript">
@@ -40,12 +43,12 @@ var box1;
 
 
 // Starting Variables
-var nIndividuals = 10
+var nIndividuals = 50
 var baseVelocity = 10
 var spatialDistribution = 100
-var centerStart = 500
-var nSteps = 20
-var bodySize = 5
+var centerStart = 400
+var nSteps = 200
+var bodySize = 8
 
 
 
@@ -93,7 +96,7 @@ function Boid(count, locx, locy, xvel, yvel) {
 
     push()
     translate(pos.x,pos.y)
-    rect(0,0, bodySize, bodySize)
+   	ellipse(0,0, bodySize, bodySize)
     pop();
   }
 }
@@ -353,38 +356,100 @@ function stepper(swarm) {
 
 
 
-
-    function setup() {
-      createCanvas(1500,700)
+   //  function setup() {
+   //    createCanvas(1500,700)
       engine = Engine.create();
 
       engine.world.gravity.y = 0;
       world = engine.world;
-      swarmArray = initializeSwarm(swarmArray)
-      result = stepper(swarmArray)
-      var arenaLog = result[1]
-	  var roundOne = arenaLog[0]
-	  console.log(result[1])
+   //    swarmArray = initializeSwarm(swarmArray)
+   //    result = stepper(swarmArray)
+   //    var arenaLog = result[1]
+	  // var roundOne = arenaLog[0]
+	  // console.log(result[1])
       Engine.run(engine);
-      // boid1 = new Boid(1, 500,200, 5,5)             
-    }
 
-    function draw() {
-      background(51)
+
+    	
+   //    // boid1 = new Boid(1, 500,200, 5,5)             
+   //  }
+
+  
+
+    // function draw() {
+    //   background(51)
+
+
+	      
+	   //    for(o = 0; o < arenaLog.length; o ++) {
+	   //    	 	currentArena = arenaLog[0]
+	   //    	for(h = 0; h < swarmArray.length; h++) {
+	   //    		currentArena[h].show()
+	   //    	}
+	   //    }
+	   //    for(o = 0; o < arenaLog.length; o ++) {
+	   //    	 	currentArena = arenaLog[o]
+	   //    	for(h = 0; h < swarmArray.length; h++) {
+	   //    		currentArena[h].show()
+	   //    	}
+	   //    }
+
       
-      for(l=0;l<10;l++) {
-      	// console.log(arenaLog)
-      	// console.log(roundOne)
-      }
-      // boid1.show()
-    }
-    console.log('+currentResult[0]+') 
+    // }
+    // console.log('+currentResult[0]+') 
 // module.exports.experimentResult = result;
 // console.log()
 // console.log(result)
 // console.log()
 
+
 // console.log(GSIresult)
+
+var swarmArray = initializeSwarm(swarmArray)
+var result = stepper(swarmArray)
+var arenaLog = result[1]
+var roundOne = arenaLog[0]
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function demo() {
+ 
+
+
+	for(o = 0; o < arenaLog.length; o ++) {
+		 	currentArena = arenaLog[o]
+		 	var xList = []
+			var yList = []
+		for(h = 0; h < swarmArray.length; h++) {
+			xList.push(currentArena[h].xPosition)
+			yList.push(currentArena[h].yPosition)
+		}
+
+
+		var trace1 = {
+		  x: xList,
+		  y: yList,
+		  mode: 'markers',
+		  type: 'scatter'
+		};
+
+		var data = [trace1];
+
+		Plotly.newPlot('myDiv', data);
+		await sleep(1000);
+
+	}
+
+}
+
+
+demo();
+
+
+
+
 
 
 /////////////////
