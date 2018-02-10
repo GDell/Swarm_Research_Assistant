@@ -2,7 +2,7 @@
 var fs = require("fs")
 var http = require("http");
 var reynolds = require("./asocialReynolds.js");
-var html = fs.readFileSync('./index.html');
+var html = fs.readFileSync('./indexOriginal.html');
 // // console.log("THIS IS REYN: " + reynolds.experimentResult[0])
 // var matter = require('matter-js')
 var matter = 'matter.js'
