@@ -1,28 +1,39 @@
-//Load HTTP module
+//Load modules
 var fs = require("fs")
 var express = require('express')
 var app = express()
 var http = require("http");
-var reynolds = require("./asocialReynolds.js");
-var html = fs.readFileSync('./indexOriginal.html');
 var config = require('config');
-// // console.log("THIS IS REYN: " + reynolds.experimentResult[0])
-// var matter = require('matter-js')
 var matter = 'matter.js'
 
+// Javscript loads
+var reynolds = require("./asocialReynolds.js");
+
+// HTML page loads
+var reynoldsOriginalHTML = fs.readFileSync('./indexOriginal.html');
+var reynoldsAsocialHTML = fs.readFileSync('./indexAsocial.html')
 
 
 
-app.get('/', function (request, response) {
+app
+	.get('/asocial', function (request, response) {
+	  	var htmlRes =  reynoldsAsocialHTML;
 
-  	var htmlRes =  html;
+		response.writeHead(200, {'Content-Type': 'text/html'});
 
-	response.writeHead(200, {'Content-Type': 'text/html'});
+		response.write(htmlRes)
 
-	response.write(htmlRes)
+		response.end();
+	})
+	.get('/', function (request, response) {
+	  	var htmlRes =  reynoldsOriginalHTML;
 
-	response.end();
-})
+		response.writeHead(200, {'Content-Type': 'text/html'});
+
+		response.write(htmlRes)
+
+		response.end();
+	})
 // // var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });\
 // //Create HTTP server and listen on port 8000 for requests
 // http.createServer(function() {

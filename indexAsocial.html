@@ -15,7 +15,7 @@
 	<!-- <script src="asocialReynolds.js"></script> -->
 	
 	<script type="text/javascript">
-		// # THE FOLLOWING IS A 2-D VARIANT OF CRAIG REYNOLDS' BOID MODEL.
+// # THE FOLLOWING IS A 2-D VARIANT OF CRAIG REYNOLDS' BOID MODEL.
 // # Written by Gabriel Dell'Accio
 // # Algorithm inspired by Craig Reynold's BOID algorithm and Conrad Parker's BOIDs pseudocode at: 
 // # http://www.kfish.org/boids/pseudocode.html
@@ -57,7 +57,7 @@ var bodySize = 8
 
 
 // Array to hold the BOID swarm
-var swarmArray = []
+
 
 Math.randomGaussian = function(mean, standardDeviation) {
  
@@ -158,293 +158,257 @@ function calculateGSI(groupedDistancePrev,groupedDistanceNext) {
   return finalGSI
 }
 
-// Find the center of the swarm by finding the average x,y of the swarm.
-function centerOfMass(boid, swarm) {
-  var totalY = 0
-  var totalX = 0
-  for(t=0;t<nIndividuals;t++){
-    totalX = totalX + swarm[t].xPosition
-    totalY = totalY + swarm[t].yPosition
-  }
-  var averageX = totalX / nIndividuals
-  var averageY = totalY / nIndividuals
+// // Find the center of the swarm by finding the average x,y of the swarm.
+// function centerOfMass(boid, swarm) {
+//   var totalY = 0
+//   var totalX = 0
+//   for(t=0;t<nIndividuals;t++){
+//     totalX = totalX + swarm[t].xPosition
+//     totalY = totalY + swarm[t].yPosition
+//   }
+//   var averageX = totalX / nIndividuals
+//   var averageY = totalY / nIndividuals
 
 
 
 
-  var centerMass = [((averageX - boid.xPosition)/100), ((averageY - boid.yPosition)/100)]
+//   var centerMass = [((averageX - boid.xPosition)/100), ((averageY - boid.yPosition)/100)]
 
-  // console.log("Center mass rule is: " + centerMass)
+//   // console.log("Center mass rule is: " + centerMass)
 
-  return centerMass
-}
+//   return centerMass
+// }
 
-function avoidRule(boid, swarm) {
+// function avoidRule(boid, swarm) {
   
-  var correctedCourse = [0,0]
+//   var correctedCourse = [0,0]
 
-  for(it=0;it<nIndividuals;it++) {
+//   for(it=0;it<nIndividuals;it++) {
 
-    if(boid.index == it) { 
+//     if(boid.index == it) { 
 
-    } else {
+//     } else {
 
-      if((Math.abs(swarm[it].xPosition - boid.xPosition) < 100) && (Math.abs(swarm[it].yPosition - boid.yPosition) < 100)) {
-        var currentPosition = [swarm[it].xPosition, swarm[it].yPosition]
-        // console.log("Current Position for avoid rule: " + currentPosition)
-        // console.log("Current Position for the boid: " + [boid.xPosition, boid.yPosition])
-        // console.log((currentPosition[0] - boid.xPosition))
-        // console.log((currentPosition[1] - boid.yPosition))
+//       if((Math.abs(swarm[it].xPosition - boid.xPosition) < 100) && (Math.abs(swarm[it].yPosition - boid.yPosition) < 100)) {
+//         var currentPosition = [swarm[it].xPosition, swarm[it].yPosition]
+//         // console.log("Current Position for avoid rule: " + currentPosition)
+//         // console.log("Current Position for the boid: " + [boid.xPosition, boid.yPosition])
+//         // console.log((currentPosition[0] - boid.xPosition))
+//         // console.log((currentPosition[1] - boid.yPosition))
 
-        correctedCourse[0] = correctedCourse[0] - (currentPosition[0] - boid.xPosition)
+//         correctedCourse[0] = correctedCourse[0] - (currentPosition[0] - boid.xPosition)
 
-        // console.log("Correction x: " + correctedCourse[0])
-        correctedCourse[1] = correctedCourse[1] - (currentPosition[1] - boid.yPosition)
+//         // console.log("Correction x: " + correctedCourse[0])
+//         correctedCourse[1] = correctedCourse[1] - (currentPosition[1] - boid.yPosition)
 
-        // console.log("Correction y: " + correctedCourse[1])
-      }
-    }
+//         // console.log("Correction y: " + correctedCourse[1])
+//       }
+//     }
 
-  }
+//   }
   
 
-  correctedCourse = [correctedCourse[0]/nIndividuals, correctedCourse[1]/nIndividuals]
-  // console.log("avoid rule: " + correctedCourse)
-  return correctedCourse 
-} 
+//   correctedCourse = [correctedCourse[0]/nIndividuals, correctedCourse[1]/nIndividuals]
+//   // console.log("avoid rule: " + correctedCourse)
+//   return correctedCourse 
+// } 
 
 
-function matchVelocity(cBoid, swarm) {
-  var meanVelocityX = 0
-  var meanVelocityY = 0
+// function matchVelocity(cBoid, swarm) {
+//   var meanVelocityX = 0
+//   var meanVelocityY = 0
 
-  for(m=0; m<nIndividuals;m++) {
-    meanVelocityY = meanVelocityY + cBoid.yvlc
-    meanVelocityX = meanVelocityX + cBoid.xvlc
-  }
-  meanVelocityX = meanVelocityX / nIndividuals
-  meanVelocityY = meanVelocityY / nIndividuals
+//   for(m=0; m<nIndividuals;m++) {
+//     meanVelocityY = meanVelocityY + cBoid.yvlc
+//     meanVelocityX = meanVelocityX + cBoid.xvlc
+//   }
+//   meanVelocityX = meanVelocityX / nIndividuals
+//   meanVelocityY = meanVelocityY / nIndividuals
 
-  var velocityCorrectionX = (meanVelocityX - cBoid.xvlc) / 8 
-  var velocityCorrectionY = (meanVelocityY = cBoid.yvlc) / 8
+//   var velocityCorrectionX = (meanVelocityX - cBoid.xvlc) / 8 
+//   var velocityCorrectionY = (meanVelocityY = cBoid.yvlc) / 8
 
-  // console.log("velocityRule: " + [velocityCorrectionX, velocityCorrectionY])
+//   // console.log("velocityRule: " + [velocityCorrectionX, velocityCorrectionY])
 
-  return [velocityCorrectionX,velocityCorrectionY]
-}
+//   return [velocityCorrectionX,velocityCorrectionY]
+// }
 
 
-function computeNextPos(cSwarm) {
+// function computeNextPos(cSwarm) {
 
-  // console.log("This is the cswarm:")
-  // console.log(cSwarm)
+//   // console.log("This is the cswarm:")
+//   // console.log(cSwarm)
 
-  var newSwarm = []
+//   var newSwarm = []
 
-  for(k=0; k < nIndividuals; k++) {
+//   for(k=0; k < nIndividuals; k++) {
     
 
-    var tempBoid = new Boid(cSwarm[k].index, cSwarm[k].xPosition, cSwarm[k].yPosition, cSwarm[k].xvlc, cSwarm[k].yvlc);
+//     var tempBoid = new Boid(cSwarm[k].index, cSwarm[k].xPosition, cSwarm[k].yPosition, cSwarm[k].xvlc, cSwarm[k].yvlc);
 
-    // console.log("NEW BOID")
-    // console.log(tempBoid)
-    var centerMassRule = centerOfMass(tempBoid, cSwarm)
-    var avoidanceRule = avoidRule(tempBoid, cSwarm)
-    var velocityRule = matchVelocity(tempBoid, cSwarm)
+//     // console.log("NEW BOID")
+//     // console.log(tempBoid)
+//     var centerMassRule = centerOfMass(tempBoid, cSwarm)
+//     var avoidanceRule = avoidRule(tempBoid, cSwarm)
+//     var velocityRule = matchVelocity(tempBoid, cSwarm)
 
-    tempBoid.xvlc = tempBoid.xvlc + centerMassRule[0] + avoidanceRule[0] + velocityRule[0]
-    tempBoid.yvlc = tempBoid.yvlc + centerMassRule[1] + avoidanceRule[1] + velocityRule[1] 
+//     tempBoid.xvlc = tempBoid.xvlc + centerMassRule[0] + avoidanceRule[0] + velocityRule[0]
+//     tempBoid.yvlc = tempBoid.yvlc + centerMassRule[1] + avoidanceRule[1] + velocityRule[1] 
 
-    var tempBoidPosX = tempBoid.xPosition + tempBoid.xvlc
-    var tempBoidPosY = tempBoid.yPosition + tempBoid.yvlc
+//     var tempBoidPosX = tempBoid.xPosition + tempBoid.xvlc
+//     var tempBoidPosY = tempBoid.yPosition + tempBoid.yvlc
 
     
-    tempBoid.xPosition = tempBoidPosX
-    tempBoid.yPosition = tempBoidPosY
-    // console.log("NEW BOID AFTER CHANGE")
-    // console.log(tempBoid)
-    // console.log("Current ind:")
-    // console.log(tempBoid)
-    newSwarm.push(tempBoid)
-    // cSwarm[i] = tempBoid
-    // console.log("current individual after being moved: " + [tempBoid.xPosition, tempBoid.yPosition])
-  }
-  // console.log("THis is the new swarm:") 
-  // console.log(newSwarm)
-  return newSwarm
-}
+//     tempBoid.xPosition = tempBoidPosX
+//     tempBoid.yPosition = tempBoidPosY
+//     // console.log("NEW BOID AFTER CHANGE")
+//     // console.log(tempBoid)
+//     // console.log("Current ind:")
+//     // console.log(tempBoid)
+//     newSwarm.push(tempBoid)
+//     // cSwarm[i] = tempBoid
+//     // console.log("current individual after being moved: " + [tempBoid.xPosition, tempBoid.yPosition])
+//   }
+//   // console.log("THis is the new swarm:") 
+//   // console.log(newSwarm)
+//   return newSwarm
+// }
 
 
-function computeBehaviors(currentSwarm) {
+// function computeBehaviors(currentSwarm) {
 
-    var prevDist = calculateGroupDist(currentSwarm)
+//     var prevDist = calculateGroupDist(currentSwarm)
 
-    var nextSwarm = computeNextPos(currentSwarm)
-    var nextDist = calculateGroupDist(nextSwarm)
+//     var nextSwarm = computeNextPos(currentSwarm)
+//     var nextDist = calculateGroupDist(nextSwarm)
 
-    var temp = calculateGSI(prevDist,nextDist)
+//     var temp = calculateGSI(prevDist,nextDist)
 
-    return [temp, nextSwarm]
-    // console.log(nextDist)
-}
+//     return [temp, nextSwarm]
+//     // console.log(nextDist)
+// }
 
-function step(swarmList) {
+// function step(swarmList) {
   
 
 
 
  
-  // for(i=0;i<steps;i++) {
+//   // for(i=0;i<steps;i++) {
 
   
-    computeResult = computeBehaviors(swarmList)
+//     computeResult = computeBehaviors(swarmList)
 
-    // console.log(computeResult)
+//     // console.log(computeResult)
 
-    // console.log("hello")
-
-
-    // console.log("current gsi log: " + computeResult[0])
+//     // console.log("hello")
 
 
-    var distLog = (computeResult[0])
+//     // console.log("current gsi log: " + computeResult[0])
 
 
-    // console.log("swarmState: " + swarmState)
-
-    swarmState = computeResult[1]
-  // }
-  // console.log(dis)
-  return [distLog, swarmState]
-}
+//     var distLog = (computeResult[0])
 
 
+//     // console.log("swarmState: " + swarmState)
+
+//     swarmState = computeResult[1]
+//   // }
+//   // console.log(dis)
+//   return [distLog, swarmState]
+// }
 
 
 
 
-console.log(swarmArray)
 
 
-function stepper(swarm) {
+// console.log(swarmArray)
+
+
+// function stepper(swarm) {
   
-  var theSwarm = swarm
+//   var theSwarm = swarm
 
-  var gsiLog = []
-  var swarmStateLog = []
+//   var gsiLog = []
+//   var swarmStateLog = []
 
-  for(p=0;p<nSteps;p++) {
-    console.log("step: "+p)
-    var result = step(theSwarm)
+//   for(p=0;p<nSteps;p++) {
+//     console.log("step: "+p)
+//     var result = step(theSwarm)
 
-    var theSwarm = result[1]
-    // console.log("The swarm: " + swarm)
-    gsiLog.push(result[0])
-    swarmStateLog.push(theSwarm)
-    // console.log("gsi: " + gsi)
-  }
-
-
-  return [gsiLog, swarmStateLog]
-}
+//     var theSwarm = result[1]
+//     // console.log("The swarm: " + swarm)
+//     gsiLog.push(result[0])
+//     swarmStateLog.push(theSwarm)
+//     // console.log("gsi: " + gsi)
+//   }
 
 
+//   return [gsiLog, swarmStateLog]
+// }
 
 
 
 
 
-
-   //  function setup() {
-   //    createCanvas(1500,700)
+ 
+  var swarmArray = []
+  
+    function setup() {
+      
+      createCanvas(1500,700)
       engine = Engine.create();
-
       engine.world.gravity.y = 0;
       world = engine.world;
-   //    swarmArray = initializeSwarm(swarmArray)
-   //    result = stepper(swarmArray)
-   //    var arenaLog = result[1]
-	  // var roundOne = arenaLog[0]
-	  // console.log(result[1])
+      swarmArray = initializeSwarm(swarmArray)
       Engine.run(engine);
+    }
 
+    function draw() {
+      background(51)
 
-    	
-   //    // boid1 = new Boid(1, 500,200, 5,5)             
-   //  }
-
-  
-
-    // function draw() {
-    //   background(51)
-
-
-	      
-	   //    for(o = 0; o < arenaLog.length; o ++) {
-	   //    	 	currentArena = arenaLog[0]
-	   //    	for(h = 0; h < swarmArray.length; h++) {
-	   //    		currentArena[h].show()
-	   //    	}
-	   //    }
-	   //    for(o = 0; o < arenaLog.length; o ++) {
-	   //    	 	currentArena = arenaLog[o]
-	   //    	for(h = 0; h < swarmArray.length; h++) {
-	   //    		currentArena[h].show()
-	   //    	}
-	   //    }
-
+      for(var v = 0; v < nIndividuals; v++) {
+        swarmArray[v].show()
+      }
       
-    // }
-    // console.log('+currentResult[0]+') 
-// module.exports.experimentResult = result;
-// console.log()
-// console.log(result)
-// console.log()
+    }
 
-
-// console.log(GSIresult)
-
-var swarmArray = initializeSwarm(swarmArray)
-var result = stepper(swarmArray)
-var arenaLog = result[1]
-var roundOne = arenaLog[0]
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function demo() {
+// async function demo() {
  
+// 	for(o = 0; o < arenaLog.length; o ++) {
+// 		 	currentArena = arenaLog[o]
+// 		 	var xList = []
+// 			var yList = []
+// 		for(h = 0; h < swarmArray.length; h++) {
+// 			xList.push(currentArena[h].xPosition)
+// 			yList.push(currentArena[h].yPosition)
+// 		}
 
 
-	for(o = 0; o < arenaLog.length; o ++) {
-		 	currentArena = arenaLog[o]
-		 	var xList = []
-			var yList = []
-		for(h = 0; h < swarmArray.length; h++) {
-			xList.push(currentArena[h].xPosition)
-			yList.push(currentArena[h].yPosition)
-		}
+// 		var trace1 = {
+// 		  x: xList,
+// 		  y: yList,
+// 		  mode: 'markers',
+// 		  type: 'scatter'
+// 		};
+
+// 		var data = [trace1];
+
+// 		Plotly.newPlot('myDiv', data);
+// 		await sleep(1000);
+
+// 	}
+
+// }
 
 
-		var trace1 = {
-		  x: xList,
-		  y: yList,
-		  mode: 'markers',
-		  type: 'scatter'
-		};
-
-		var data = [trace1];
-
-		Plotly.newPlot('myDiv', data);
-		await sleep(1000);
-
-	}
-
-}
-
-
-demo();
+// demo();
 
 
 
