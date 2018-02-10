@@ -11,6 +11,8 @@
   "dependencies": {
     "express": "~4.16.2",
     "gaussian": "^1.1.0",
-    "matter-js": "^0.14.1"
+    "matter-js": "^0.14.1",
+    "express": "~4.13.1",
+    "config": "^1.21.0"
   }
 }
