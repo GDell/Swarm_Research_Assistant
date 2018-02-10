@@ -1,4 +1,18 @@
-// # THE FOLLOWING IS A 2-D VARIANT OF CRAIG REYNOLDS' BOID MODEL.
+<!doctype html> 
+	<head> 
+	<meta charset>   
+		<h1>Reynolds 2D BOID model</h1> 
+	</head> 
+
+	<body>
+	</body>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+	<!-- <script src="asocialReynolds.js"></script> -->
+	
+	<script type="text/javascript">
+		// # THE FOLLOWING IS A 2-D VARIANT OF CRAIG REYNOLDS' BOID MODEL.
 // # Written by Gabriel Dell'Accio
 // # Algorithm inspired by Craig Reynold's BOID algorithm and Conrad Parker's BOIDs pseudocode at: 
 // # http://www.kfish.org/boids/pseudocode.html
@@ -16,6 +30,14 @@
 // #     # This is an index developed by Baldessare and colleagues (2003) to measure the stability of a 
 // #     # swarm in their paper "Evolving mobile robots  able to display collective behaviors"
 
+var Engine = Matter.Engine;
+var World = Matter.World;
+var Bodies = Matter.Bodies;
+
+var engine;
+var world;
+var box1;
+
 
 // Starting Variables
 var nIndividuals = 10
@@ -25,24 +47,55 @@ var centerStart = 500
 var nSteps = 20
 var bodySize = 5
 
+
+
 // Load the gaussian package in order to sample from normal 
 // distributions.
-var normalDist = require("gaussian")
-var matterJS = require("matter-js")
-var bodies = matterJS.Bodies
+// var normalDist = require("gaussian")
+
 
 // Array to hold the BOID swarm
 var swarmArray = []
 
+Math.randomGaussian = function(mean, standardDeviation) {
+ 
+
+     if (Math.randomGaussian.nextGaussian !== undefined) {
+         var nextGaussian = Math.randomGaussian.nextGaussian;
+         delete Math.randomGaussian.nextGaussian;
+         return (nextGaussian * standardDeviation) + mean;
+     } else {
+         var v1, v2, s, multiplier;
+         do {
+             v1 = 2 * Math.random() - 1; // between -1 and 1
+             v2 = 2 * Math.random() - 1; // between -1 and 1
+             s = v1 * v1 + v2 * v2;
+         } while (s >= 1 || s == 0);
+         multiplier = Math.sqrt(-2 * Math.log(s) / s);
+         Math.randomGaussian.nextGaussian = v2 * multiplier;
+         return (v1 * multiplier * standardDeviation) + mean;
+     }
+ 
+ };
+
 // Object that represents a boid.
-function boid(count, locx, locy, xvel, yvel) {
+function Boid(count, locx, locy, xvel, yvel) {
   this.index = count
   this.xPosition = locx
   this.yPosition = locy
   this.xvlc = xvel
   this.yvlc = yvel
-  this.body = bodies.circle(locx, locy, bodySize, bodySize)
-  
+  this.body = Bodies.circle(locx, locy, bodySize, bodySize)
+  World.add(world, this.body);
+  this.show = function() {
+    var pos = this.body.position
+    var angle = this.body.angle;
+
+    push()
+    translate(pos.x,pos.y)
+    rect(0,0, bodySize, bodySize)
+    pop();
+  }
 }
 
 // Helpper function for printing the location of a swarm.
@@ -54,13 +107,15 @@ function printBoidLocation(boid) {
 function initializeSwarm(swarm) {
   for(h = 0; h < nIndividuals; h ++) {
 
-    var distribution = normalDist(centerStart, spatialDistribution);
+    // var distribution = normalDist(centerStart, spatialDistribution);
 
     // Generate x,y coordinates from the random distribution we generated.
-    var tempX = distribution.ppf(Math.random());
-    var tempY = distribution.ppf(Math.random());
+    // var tempX = distribution.ppf(Math.random());
+    // var tempY = distribution.ppf(Math.random());
+    var tempX = Math.randomGaussian(centerStart,spatialDistribution)
+    var tempY = Math.randomGaussian(centerStart,spatialDistribution)
 
-    var tempBoid = new boid(h, tempX, tempY, baseVelocity, baseVelocity);
+    var tempBoid = new Boid(h, tempX, tempY, baseVelocity, baseVelocity);
     
     swarm.push(tempBoid);
 
@@ -187,7 +242,7 @@ function computeNextPos(cSwarm) {
   for(k=0; k < nIndividuals; k++) {
     
 
-    var tempBoid = new boid(cSwarm[k].index, cSwarm[k].xPosition, cSwarm[k].yPosition, cSwarm[k].xvlc, cSwarm[k].yvlc);
+    var tempBoid = new Boid(cSwarm[k].index, cSwarm[k].xPosition, cSwarm[k].yPosition, cSwarm[k].xvlc, cSwarm[k].yvlc);
 
     // console.log("NEW BOID")
     // console.log(tempBoid)
@@ -264,8 +319,9 @@ function step(swarmList) {
 
 
 
-var swarmArray = initializeSwarm(swarmArray)
-// console.log(swarmArray)
+
+
+console.log(swarmArray)
 
 
 function stepper(swarm) {
@@ -276,7 +332,7 @@ function stepper(swarm) {
   var swarmStateLog = []
 
   for(p=0;p<nSteps;p++) {
-    // console.log("step: "+p)
+    console.log("step: "+p)
     var result = step(theSwarm)
 
     var theSwarm = result[1]
@@ -294,10 +350,36 @@ function stepper(swarm) {
 
 
 
-result = stepper(swarmArray)
-console.log(result[0])
 
-module.exports.experimentResult = result;
+
+
+
+    function setup() {
+      createCanvas(1500,700)
+      engine = Engine.create();
+
+      engine.world.gravity.y = 0;
+      world = engine.world;
+      swarmArray = initializeSwarm(swarmArray)
+      result = stepper(swarmArray)
+      var arenaLog = result[1]
+	  var roundOne = arenaLog[0]
+	  console.log(result[1])
+      Engine.run(engine);
+      // boid1 = new Boid(1, 500,200, 5,5)             
+    }
+
+    function draw() {
+      background(51)
+      
+      for(l=0;l<10;l++) {
+      	// console.log(arenaLog)
+      	// console.log(roundOne)
+      }
+      // boid1.show()
+    }
+    console.log('+currentResult[0]+') 
+// module.exports.experimentResult = result;
 // console.log()
 // console.log(result)
 // console.log()
@@ -306,3 +388,5 @@ module.exports.experimentResult = result;
 
 
 /////////////////
+	</script>
+</html>'
