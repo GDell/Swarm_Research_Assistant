@@ -13,7 +13,7 @@ var reynolds = require("./asocialReynolds.js");
 var reynoldsOriginalHTML = fs.readFileSync('./indexOriginal.html');
 var reynoldsAsocialHTML = fs.readFileSync('./indexAsocial.html')
 
-
+app.use("/", express.static(__dirname + '/public'));
 
 app
 	.get('/asocial', function (request, response) {
