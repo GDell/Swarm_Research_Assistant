@@ -1,22 +1,23 @@
-<!doctype html> 
-	<head> 
-	<meta charset>   
-		<h1 style=" margin-left: 30%;">Reynolds 2D BOID model</h1> 
-	</head> 
 
-	<body>
-		
-	 <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
-	</body>
-	
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+<!doctype html> 
+  <head> 
+  <meta charset>   
+    <h1 style=" margin-left: 30%;">Reynolds 2D BOID model</h1> 
+  </head> 
+
+  <body>
+    
+   <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+  </body>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
   <!-- <script language="javascript"  src='/p5/p5.min.js'></script> -->
 
-	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-	<!-- <script src="asocialReynolds.js"></script> -->
-	
-	<script type="text/javascript">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- <script src="asocialReynolds.js"></script> -->
+  
+  <script type="text/javascript">
 
 var Engine = Matter.Engine;
 var World = Matter.World;
@@ -36,14 +37,20 @@ var centerStart = 400
 var nSteps = 200
 var bodySize = 8
 
+var width = 1500
+var height = 700
 
 
-// Load the gaussian package in order to sample from normal 
-// distributions.
-// var normalDist = require("gaussian")
+
+var flock; 
 
 
-Math.randomGaussian = function(mean, standardDeviation) {
+
+
+
+
+function setup() {
+  Math.randomGaussian = function(mean, standardDeviation) {
  
 
      if (Math.randomGaussian.nextGaussian !== undefined) {
@@ -62,92 +69,175 @@ Math.randomGaussian = function(mean, standardDeviation) {
          return (v1 * multiplier * standardDeviation) + mean;
      }
  
- };
+};
+  createCanvas(1500, 700)
+  
 
-
-function findCenterOfMass(swarm) {
-  var totalY = 0
-  var totalX = 0
-  for(t=0;t<nIndividuals;t++){
-    totalX = totalX + swarm[t].body.position.x
-    totalY = totalY + swarm[t].body.position.y
-  }
-  var averageX = totalX / nIndividuals
-  var averageY = totalY / nIndividuals
-  var centerMass = [averageX/2,averageY/2]
-
-  // console.log("Center mass rule is: " + centerMass)
-
-  return centerMass
-
-}
-// Object that represents a boid.
-function Boid(count, locx, locy, xvel, yvel, ang) {
-  this.index = count
-  this.xPosition = locx
-  this.yPosition = locy
-  this.xvlc = xvel
-  this.yvlc = yvel
-  this.angle = ang
-  this.body = Bodies.circle(locx, locy, bodySize, bodySize)
-  World.add(world, this.body);
-  this.show = function() {
-
-    
-    // Bodies.setAngularVelocity(this.body, )
-    Body.setVelocity(this.body, {x:this.xvlc, y: this.yvlc})
+  engine = Engine.create();
+  engine.world.gravity.y = 0;
+  world = engine.world;
       
-      // var canvas = document.getElementById("defaultCanvas0")
-      // console.log(canvas)
-      // var ctx = canvas.getContext('2d')
-      // push()
-      // translate(newCor[0],newCor[1]);
-      // pop()
-     var pos = this.body.position
-    var angle = this.body.angle;
 
-    push()
-    // translate(pos.x,pos.y)
-    ellipse(pos.x,pos.y, bodySize, bodySize)
-    pop();
+  flock = new Flock()
+
+  for(var o = 0; o <nIndividuals; o++) {
+    
+
+    var tempX = Math.randomGaussian(centerStart,spatialDistribution)
+    var tempY = Math.randomGaussian(centerStart,spatialDistribution)
+    // var tempAngle = Math.randomGaussian(180,40)
+
+    var newBoid = new Boid(o, tempX, tempY, baseVelocity, baseVelocity);
+    
+    flock.addBoid(newBoid);
+
   }
-  // this.reframe = function(swarmA) {
-  //   var canvas = document.getElementById("defaultCanvas0")
-  //   var context = canvas.getContext('2d')
-  //   console.log(context)
-  //   var newCor = findCenterOfMass(swarmA)
-  //   context.translate(newCor[0], newCor[1])
 
 
-  // }
+  Engine.run(engine);
+}
+
+function draw() {
+  background(51);
+  flock.run();
+}
+
+
+
+function Flock() {
+  this.boids = [];
+}
+
+
+Flock.prototype.run = function() {
+  for(var i =0; i < this.boids.length; i++) {
+    this.boids[i].run(this.boids)
+  }
+}
+
+
+Flock.prototype.addBoid = function(b) {
+  this.boids.push(b)
+}
+
+// Object that represents a boid.
+function Boid(count, locx, locy, xvel, yvel) {
+  this.acceleration = createVector(0,0);
+  this.index = count;
+  this.position = createVector(locx,locy)
+  this.velocity = createVector(xvel,yvel)
+  this.r = 3.0;
+  this.maxspeed = 3;
+  this.maxforce = 0.05;
+  // console.log(this.velocity)
+  this.body = Bodies.circle(xvel, yvel, bodySize, bodySize)
+  World.add(world, this.body);
+}
+
+
+
+Boid.prototype.run = function(boids) {
+  this.flock(boids)
+  this.update();
+  this.borders();
+  this.render();
+}
+
+Boid.prototype.applyForce = function(force) {
+  this.acceleration.add(force)
+}
+
+Boid.prototype.flock = function(boids) {
+  var lightAttraction = this.attraction(createVector(1500/2, 700/2))
+  var collision = this.separate(boids)
+
+  // Weight of the attraction force
+  lightAttraction.mult(.2)
+  collision.mult(5)
+
+  this.applyForce(lightAttraction)
+  this.applyForce(collision)
+}
+
+Boid.prototype.update = function() {
+
+  this.velocity.add(this.acceleration)
+  // this.velocity.limit(this.maxspeed);
+  this.position.add(this.velocity);
+  this.acceleration = createVector(0,0)
+}
+
+Boid.prototype.attraction  = function(target) {
+  var desired = p5.Vector.sub(target, this.position)
+  // Normalize desired and scale to maximum speed
+  desired.normalize();
+  desired = desired.mult(this.maxspeed);
+  // Steering = Desired minus Velocity
+  var steer = p5.Vector.sub(desired, this.velocity);
+
+  steer.limit(this.maxforce);  // Limit to maximum steering force
+  return steer;
+}
+
+Boid.prototype.separate = function(boids) {
+  var desiredseparation = 10;
+  var steer = createVector(0,0);
+  var count = 0;
+  // For every boid in the system, check if it's too close
+  for (var i = 0; i < boids.length; i++) {
+    var d = p5.Vector.dist(this.position,boids[i].position);
+    // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+    if ((d > 0) && (d < desiredseparation)) {
+      // Calculate vector pointing away from neighbor
+      var diff = p5.Vector.sub(this.position,boids[i].position);
+      diff.normalize();
+      diff.div(d);        // Weight by distance
+      steer.add(diff);
+      count++;            // Keep track of how many
+    }
+  }
+  // Average -- divide by how many
+  if (count > 0) {
+    steer.div(count);
+  }
+
+  // As long as the vector is greater than 0
+  if (steer.mag() > 0) {
+    // Implement Reynolds: Steering = Desired - Velocity
+    steer.normalize();
+    steer.mult(this.maxspeed);
+    steer.sub(this.velocity);
+    steer.limit(this.maxforce);
+  }
+  return steer;
+}
+
+Boid.prototype.render = function() {
+  // console.log(this.velocity)
+  var theta = this.velocity.heading() + radians(90)
+  fill(127)
+  stroke(200)
+  push()
+  translate(this.position.x, this.position.y);
+  rotate(theta);
+  beginShape();
+  vertex(0, -this.r*2);
+  vertex(-this.r, this.r*2);
+  vertex(this.r, this.r*2);
+  endShape(CLOSE);
+  pop();
+}
+
+Boid.prototype.borders = function() {
+  if (this.position.x < -this.r)  this.position.x = width +this.r;
+  if (this.position.y < -this.r)  this.position.y = height+this.r;
+  if (this.position.x > width +this.r) this.position.x = -this.r;
+  if (this.position.y > height+this.r) this.position.y = -this.r;
 }
 
 // Helpper function for printing the location of a swarm.
 function printBoidLocation(boid) {
   console.log("Boid loc: " +[boid.xPosition, boid.yPosition])
-}
-
-// 
-function initializeSwarm(swarm) {
-  for(h = 0; h < nIndividuals; h ++) {
-
-    // var distribution = normalDist(centerStart, spatialDistribution);
-
-    // Generate x,y coordinates from the random distribution we generated.
-    // var tempX = distribution.ppf(Math.random());
-    // var tempY = distribution.ppf(Math.random());
-    var tempX = Math.randomGaussian(centerStart,spatialDistribution)
-    var tempY = Math.randomGaussian(centerStart,spatialDistribution)
-    var tempAngle = Math.randomGaussian(180,40)
-
-    var tempBoid = new Boid(h, tempX, tempY, baseVelocity, baseVelocity, tempAngle);
-    
-    swarm.push(tempBoid);
-
-    // printBoidLocation(tempBoid)
-  } 
-  // console.log("Initialized Swarm:" + swarm)
-  return swarm
 }
 
 
@@ -181,81 +271,9 @@ function calculateGSI(groupedDistancePrev,groupedDistanceNext) {
   return finalGSI
 }
 
-
-
  
-  var swarmArray = []
-  
-    function setup() { 
-      createCanvas(1500,700)
-      engine = Engine.create();
-      engine.world.gravity.y = 0;
-      world = engine.world;
-      swarmArray = initializeSwarm(swarmArray)
-      Engine.run(engine);
-    }
-
-    function draw() {
-      background(51)
-
-      // console.log(newCor)
-    
-  
-
-      for(var v = 0; v < nIndividuals; v++) {
-        // push()
-        
-        swarmArray[v].show()
-        // swarmArray[v].reframe(swarmArray)
-        // pop()
-        
-      }
-      // push()
-      
-      // pop()
-    }
-
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// async function demo() {
- 
-// 	for(o = 0; o < arenaLog.length; o ++) {
-// 		 	currentArena = arenaLog[o]
-// 		 	var xList = []
-// 			var yList = []
-// 		for(h = 0; h < swarmArray.length; h++) {
-// 			xList.push(currentArena[h].xPosition)
-// 			yList.push(currentArena[h].yPosition)
-// 		}
-
-
-// 		var trace1 = {
-// 		  x: xList,
-// 		  y: yList,
-// 		  mode: 'markers',
-// 		  type: 'scatter'
-// 		};
-
-// 		var data = [trace1];
-
-// 		Plotly.newPlot('myDiv', data);
-// 		await sleep(1000);
-
-// 	}
-
-// }
-
-
-// demo();
-
-
-
-
 
 
 /////////////////
-	</script>
+  </script>
 </html>'
