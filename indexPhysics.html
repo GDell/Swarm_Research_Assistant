@@ -1,0 +1,213 @@
+<!doctype html> 
+  <head> 
+  <meta charset>   
+    <h1 style=" margin-left: 30%;">Reynolds 2D BOID model</h1> 
+  </head> 
+
+  <body>
+    
+   <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+  </body>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+  <!-- <script language="javascript"  src='/p5/p5.min.js'></script> -->
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- <script src="asocialReynolds.js"></script> -->
+  
+  <script type="text/javascript">
+
+var Engine = Matter.Engine;
+var World = Matter.World;
+var Bodies = Matter.Bodies;
+var Body = Matter.Body
+
+var engine;
+var world;
+var box1;
+
+
+// Starting Variables
+var nIndividuals = 50
+var baseVelocity = 1
+var spatialDistribution = 100
+var centerStart = 400
+var nSteps = 200
+var bodySize = 8
+
+
+
+// Load the gaussian package in order to sample from normal 
+// distributions.
+// var normalDist = require("gaussian")
+
+
+Math.randomGaussian = function(mean, standardDeviation) {
+ 
+
+     if (Math.randomGaussian.nextGaussian !== undefined) {
+         var nextGaussian = Math.randomGaussian.nextGaussian;
+         delete Math.randomGaussian.nextGaussian;
+         return (nextGaussian * standardDeviation) + mean;
+     } else {
+         var v1, v2, s, multiplier;
+         do {
+             v1 = 2 * Math.random() - 1; // between -1 and 1
+             v2 = 2 * Math.random() - 1; // between -1 and 1
+             s = v1 * v1 + v2 * v2;
+         } while (s >= 1 || s == 0);
+         multiplier = Math.sqrt(-2 * Math.log(s) / s);
+         Math.randomGaussian.nextGaussian = v2 * multiplier;
+         return (v1 * multiplier * standardDeviation) + mean;
+     }
+ 
+ };
+
+
+
+
+
+function Flock() {
+  this.boids = [];
+}
+
+Flock.prototype.step = function() {
+  // body...
+  for(var i=0; i<this.boids.length; i++) {
+    this.boids[i].step(this.boids)
+  }
+
+};
+
+Flock.prototype.addBoid = function(b) {
+  this.boids.push(b)
+}
+
+
+
+// Object that represents a boid.
+function Boid(locx, locy, xvel, yvel, ang) {
+  this.xPosition = locx
+  this.yPosition = locy
+  this.xvlc = xvel
+  this.yvlc = yvel
+  this.angle = ang
+  this.body = Bodies.circle(locx, locy, bodySize, bodySize)
+  World.add(world, this.body);
+
+
+  this.show = function() {
+
+
+    currentXvlc = (400 - (this.body.position.x)) /100
+    currentYvlc = (400 - (this.body.position.y)) /100
+
+    console.log(currentXvlc)
+    console.log(currentYvlc)
+    
+    
+    // Bodies.setAngularVelocity(this.body, )
+    Body.setVelocity(this.body, {x:currentXvlc + .5, y: currentYvlc + .5})
+    Body.setAngularVelocity(this.body, {x:1, y:1})
+
+    var pos = this.body.position
+    var angle = this.body.angle;
+
+    push()
+    // translate(pos.x,pos.y)
+    ellipse(pos.x,pos.y, bodySize, bodySize)
+    pop();
+  }
+}
+
+// Helpper function for printing the location of a swarm.
+function printBoidLocation(boid) {
+  console.log("Boid loc: " +[boid.xPosition, boid.yPosition])
+}
+
+// 
+function initializeSwarm(swarm) {
+  for(h = 0; h < nIndividuals; h ++) {
+
+    // var distribution = normalDist(centerStart, spatialDistribution);
+
+    // Generate x,y coordinates from the random distribution we generated.
+    // var tempX = distribution.ppf(Math.random());
+    // var tempY = distribution.ppf(Math.random());
+    var tempX = Math.randomGaussian(centerStart,spatialDistribution)
+    var tempY = Math.randomGaussian(centerStart,spatialDistribution)
+    var tempAngle = Math.randomGaussian(180,40)
+
+    var tempBoid = new Boid(tempX, tempY, baseVelocity, baseVelocity, tempAngle);
+    
+    swarm.push(tempBoid);
+
+    // printBoidLocation(tempBoid)
+  } 
+  // console.log("Initialized Swarm:" + swarm)
+  return swarm
+}
+
+
+function computeCartDist(x1,x2,y1,y2) {
+  var a = x1 - x2 
+  var b = y1 - y2 
+  var c = Math.sqrt(a*a + b*b)
+  return c
+}
+
+function calculateGroupDist(swarm) {
+  var groupedDistance = 0
+  for(i=0; i<nIndividuals; i++) {
+    for(j=0;j<nIndividuals; j++) {
+      var tempDist = computeCartDist(swarm[i].xPosition,swarm[j].xPosition,swarm[i].yPosition, swarm[j].yPosition);
+      // console.log(tempDist)
+      groupedDistance = groupedDistance + tempDist;
+    } 
+  }
+  // console.log("Grouped distance: "+groupedDistance)
+  return groupedDistance;
+}
+
+function calculateGSI(groupedDistancePrev,groupedDistanceNext) {
+  // console.log("groupedDistancePrev: "+ groupedDistancePrev)
+  // console.log("groupedDistanceNext: "+ groupedDistanceNext)
+  var finalGSI = 1 - (((Math.abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
+  // console.log(finalGSI)
+
+  // console.log(finalGSI)
+  return finalGSI
+}
+
+
+
+ 
+  var swarmArray = []
+  
+    function setup() { 
+      createCanvas(1500,700)
+      engine = Engine.create();
+      engine.world.gravity.y = 0;
+      world = engine.world;
+      swarmArray = initializeSwarm(swarmArray)
+      Engine.run(engine);
+    }
+
+
+    function draw() {
+      background(51)
+      for(var v = 0; v < nIndividuals; v++) {
+        swarmArray[v].show()
+      }
+    }
+
+
+
+
+
+
+
+/////////////////
+  </script>
+</html>'

@@ -7,7 +7,7 @@
 
   <body>
     
-   <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+   <div style="float: right" id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
   </body>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
@@ -28,31 +28,26 @@ var engine;
 var world;
 var box1;
 
-
 // Starting Variables
 var nIndividuals = 50
 var baseVelocity = 1
 var spatialDistribution = 100
+// Starting average location for the swarm.
 var centerStart = 400
-var nSteps = 200
 var bodySize = 8
 
-var width = 1500
-var height = 700
+var canvasWidth = 700
+var canvasHeight = 700
 
-
+var attractionValue = .1
 
 var flock; 
-
-
-
-
+var gsiLog = []
 
 
 function setup() {
-  Math.randomGaussian = function(mean, standardDeviation) {
- 
 
+  Math.randomGaussian = function(mean, standardDeviation) {
      if (Math.randomGaussian.nextGaussian !== undefined) {
          var nextGaussian = Math.randomGaussian.nextGaussian;
          delete Math.randomGaussian.nextGaussian;
@@ -69,53 +64,49 @@ function setup() {
          return (v1 * multiplier * standardDeviation) + mean;
      }
  
-};
-  createCanvas(1500, 700)
+  };
+  nIndividuals = prompt("Please enter the number of individuals to be included in the swarm: ", 50)
+  createCanvas(canvasWidth, canvasHeight)
   
 
   engine = Engine.create();
   engine.world.gravity.y = 0;
   world = engine.world;
       
-
   flock = new Flock()
-
+  // Generate the starting swarm.
   for(var o = 0; o <nIndividuals; o++) {
-    
-
     var tempX = Math.randomGaussian(centerStart,spatialDistribution)
     var tempY = Math.randomGaussian(centerStart,spatialDistribution)
-    // var tempAngle = Math.randomGaussian(180,40)
-
-    var newBoid = new Boid(o, tempX, tempY, baseVelocity, baseVelocity);
-    
+    var tempXV = Math.randomGaussian(baseVelocity,1)
+    var tempYV = Math.randomGaussian(baseVelocity,1)
+    var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV);
     flock.addBoid(newBoid);
-
   }
-
-
   Engine.run(engine);
 }
 
 function draw() {
   background(51);
-  flock.run();
+  prior = calculateGroupDist(flock);
+  flock.step();
+  post = calculateGroupDist(flock)
+  currentGSI = calculateGSI(prior,post)
+  gsiLog.push(currentGSI)
+  displayGSIlog(gsiLog)
+  // console.log(gsiLog)
 }
-
-
 
 function Flock() {
   this.boids = [];
 }
-
-
-Flock.prototype.run = function() {
+// To step the flock, step each individual Boid. 
+Flock.prototype.step = function() {
   for(var i =0; i < this.boids.length; i++) {
-    this.boids[i].run(this.boids)
+    this.boids[i].step(this.boids)
   }
 }
-
-
+// Function to add a boid to the flock objects list of boids
 Flock.prototype.addBoid = function(b) {
   this.boids.push(b)
 }
@@ -129,15 +120,14 @@ function Boid(count, locx, locy, xvel, yvel) {
   this.r = 3.0;
   this.maxspeed = 3;
   this.maxforce = 0.05;
-  // console.log(this.velocity)
   this.body = Bodies.circle(xvel, yvel, bodySize, bodySize)
   World.add(world, this.body);
 }
 
-
-
-Boid.prototype.run = function(boids) {
+Boid.prototype.step = function(boids) {
+  // Step each boid
   this.flock(boids)
+  // Update the boid
   this.update();
   this.borders();
   this.render();
@@ -148,19 +138,19 @@ Boid.prototype.applyForce = function(force) {
 }
 
 Boid.prototype.flock = function(boids) {
-  var lightAttraction = this.attraction(createVector(1500/2, 700/2))
-  var collision = this.separate(boids)
+  // Place the center of attraction (the light source) in the center of the arena.
+  var lightAttraction = this.attraction(createVector(canvasWidth/2, canvasHeight/2))
+  var collision = this.collide(boids)
 
   // Weight of the attraction force
-  lightAttraction.mult(.2)
-  collision.mult(5)
+  lightAttraction.mult(attractionValue)
+  collision.mult(3)
 
   this.applyForce(lightAttraction)
   this.applyForce(collision)
 }
 
 Boid.prototype.update = function() {
-
   this.velocity.add(this.acceleration)
   // this.velocity.limit(this.maxspeed);
   this.position.add(this.velocity);
@@ -174,12 +164,11 @@ Boid.prototype.attraction  = function(target) {
   desired = desired.mult(this.maxspeed);
   // Steering = Desired minus Velocity
   var steer = p5.Vector.sub(desired, this.velocity);
-
   steer.limit(this.maxforce);  // Limit to maximum steering force
   return steer;
 }
 
-Boid.prototype.separate = function(boids) {
+Boid.prototype.collide = function(boids) {
   var desiredseparation = 10;
   var steer = createVector(0,0);
   var count = 0;
@@ -212,8 +201,9 @@ Boid.prototype.separate = function(boids) {
   return steer;
 }
 
+// Render's the BOID swarm in the canvas
 Boid.prototype.render = function() {
-  // console.log(this.velocity)
+  // Find the boid's heading
   var theta = this.velocity.heading() + radians(90)
   fill(127)
   stroke(200)
@@ -228,6 +218,7 @@ Boid.prototype.render = function() {
   pop();
 }
 
+// Wrap around borders
 Boid.prototype.borders = function() {
   if (this.position.x < -this.r)  this.position.x = width +this.r;
   if (this.position.y < -this.r)  this.position.y = height+this.r;
@@ -252,7 +243,7 @@ function calculateGroupDist(swarm) {
   var groupedDistance = 0
   for(i=0; i<nIndividuals; i++) {
     for(j=0;j<nIndividuals; j++) {
-      var tempDist = computeCartDist(swarm[i].xPosition,swarm[j].xPosition,swarm[i].yPosition, swarm[j].yPosition);
+      var tempDist = computeCartDist(swarm.boids[i].position.x,swarm.boids[j].position.x,swarm.boids[i].position.y, swarm.boids[j].position.y);
       // console.log(tempDist)
       groupedDistance = groupedDistance + tempDist;
     } 
@@ -262,16 +253,41 @@ function calculateGroupDist(swarm) {
 }
 
 function calculateGSI(groupedDistancePrev,groupedDistanceNext) {
-  // console.log("groupedDistancePrev: "+ groupedDistancePrev)
-  // console.log("groupedDistanceNext: "+ groupedDistanceNext)
   var finalGSI = 1 - (((Math.abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
-  // console.log(finalGSI)
-
-  // console.log(finalGSI)
   return finalGSI
 }
 
- 
+
+async function displayGSIlog(log) {
+
+  var logLength = log.length;
+
+  var xList = []
+  var yList = []
+  for (var f = 0; f < logLength; f++) {
+    if(logLength>100) {
+      if(f > (logLength - 100) ){
+        xList.push(f)
+        yList.push(log[f])
+      }
+    } else {
+      xList.push(f)
+      yList.push(log[f])
+    }
+  }
+  
+  var trace1 = {
+    x: xList,
+    y: yList,
+    mode: 'markers',
+    type: 'line'
+  };
+
+  var data = [trace1];
+
+  Plotly.newPlot('myDiv', data);
+
+}
 
 
 /////////////////

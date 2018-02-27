@@ -11,7 +11,9 @@ var reynolds = require("./asocialReynolds.js");
 
 // HTML page loads
 var reynoldsOriginalHTML = fs.readFileSync('./indexOriginal.html');
-var reynoldsAsocialHTML = fs.readFileSync('./indexAsocial.html')
+var reynoldsAsocialHTML = fs.readFileSync('./indexAsocial.html');
+var reynoldsPhysicsHTML = fs.readFileSync('./indexPhysics.html');
+
 
 app.use("/", express.static(__dirname + '/public'));
 
@@ -27,6 +29,15 @@ app
 	})
 	.get('/', function (request, response) {
 	  	var htmlRes =  reynoldsOriginalHTML;
+
+		response.writeHead(200, {'Content-Type': 'text/html'});
+
+		response.write(htmlRes)
+
+		response.end();
+	})
+	.get('/phys', function(request, response) {
+		var htmlRes =  reynoldsPhysicsHTML;
 
 		response.writeHead(200, {'Content-Type': 'text/html'});
 
