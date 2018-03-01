@@ -37,15 +37,8 @@ var nSteps = 200
 var bodySize = 8
 
 
-
-// Load the gaussian package in order to sample from normal 
-// distributions.
-// var normalDist = require("gaussian")
-
-
 Math.randomGaussian = function(mean, standardDeviation) {
  
-
      if (Math.randomGaussian.nextGaussian !== undefined) {
          var nextGaussian = Math.randomGaussian.nextGaussian;
          delete Math.randomGaussian.nextGaussian;
@@ -95,7 +88,6 @@ function Boid(locx, locy, xvel, yvel, ang) {
   this.angle = ang
   this.body = Bodies.circle(locx, locy, bodySize, bodySize)
   World.add(world, this.body);
-
 
   this.show = function() {
 
