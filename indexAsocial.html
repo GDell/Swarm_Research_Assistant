@@ -7,6 +7,15 @@
   <body>
     
    <div style="float: right" id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+   <div style="clear: both; float: right">
+    <ul class="behaviorList" style="list-style-type: none; margin-right: 20%">
+      <li><input id="asocialCheckBox" title="Asocial" type="checkbox"> Asocial, light attraction</li>
+      <li><input id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
+      <li><input id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
+      <li><input id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
+    </ul>
+   </div>
+   
   </body>
   
   <!-- CDNS -->
@@ -37,8 +46,14 @@
       var canvasHeight = 700;
       var centerStart = canvasHeight/2;
 
-      var attractionValue = .1;
+      var lightAttractionStrength = .1;
+      var socialAttractionStrength = .4;
+      var collisionSensitivity = 3;
+      var avoidanceDistance = 50;
 
+      var simLight;
+      var simAttraction;
+      var alignentSim;
 
       var flock; 
       var gsiLog = []
@@ -66,7 +81,7 @@
 
         nIndividuals = prompt("Please enter the number of individuals to be included in the swarm: ", 25)
         tempValue = prompt("Please enter attraction magnitude, a decimal between 0.0 and 1.0: ", .1)
-        attractionValue = parseFloat(tempValue)
+        lightAttractionStrength = parseFloat(tempValue)
 
         createCanvas(canvasWidth, canvasHeight)
         
@@ -81,7 +96,7 @@
           var tempY = Math.randomGaussian(centerStart,spatialDistribution)
           var tempXV = Math.randomGaussian(baseVelocity,1)
           var tempYV = Math.randomGaussian(baseVelocity,1)
-          var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV, attractionValue);
+          var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV, lightAttractionStrength);
           flock.addBoid(newBoid);
         }
         Engine.run(engine);
@@ -124,6 +139,7 @@
         World.add(world, this.body);
       }
 
+
       Boid.prototype.step = function(boids) {
         // Step each boid
         this.flock(boids)
@@ -140,14 +156,34 @@
       Boid.prototype.flock = function(boids) {
         // Place the center of attraction (the light source) in the center of the arena.
         var lightAttraction = this.attraction(createVector(canvasWidth/2, canvasHeight/2))
-        var collision = this.collide(boids)
+        var collision = this.collide(boids);
+        var alignment = this.align(boids);
+        var attraction = this.cohesion(boids)
+        var avoidance = this. avoidance(boids, avoidanceDistance)
 
+        var simLight = document.getElementById('asocialCheckBox').checked;
+        var alignmentSim = document.getElementById('alignCheckBox').checked;
+        var simAttraction = document.getElementById('attractionCheckBox').checked;
+        var simAvoidance = document.getElementById('avoidanceCheckBox').checked;
+
+
+     
         // Weight of the attraction force
         lightAttraction.mult(this.attractVal)
-        collision.mult(3)
+        collision.mult(collisionSensitivity)
+        attraction.mult(socialAttractionStrength)
 
-        this.applyForce(lightAttraction)
-        this.applyForce(collision)
+        if(simLight){
+          this.applyForce(lightAttraction)
+        } else if (alignentSim){
+          this.applyForce(alignment)
+        } else if (simAttraction) {
+          this.applyForce(attraction)
+        } else if (simAvoidance) {
+          this.applyForce(avoidance)
+        }
+
+        this.applyForce(collision)  
       }
 
       Boid.prototype.update = function() {
@@ -199,6 +235,93 @@
           steer.limit(this.maxforce);
         }
         return steer;
+      }
+
+      Boid.prototype.avoidance = function(boids, sep) {
+        var desiredseparation = sep;
+        var steer = createVector(0,0);
+        var count = 0;
+        // For every boid in the system, check if it's too close
+        for (var i = 0; i < boids.length; i++) {
+          var d = p5.Vector.dist(this.position,boids[i].position);
+          // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+          if ((d > 0) && (d < desiredseparation)) {
+            // Calculate vector pointing away from neighbor
+            var diff = p5.Vector.sub(this.position,boids[i].position);
+            diff.normalize();
+            diff.div(d);        // Weight by distance
+            steer.add(diff);
+            count++;            // Keep track of how many
+          }
+        }
+        // Average -- divide by how many
+        if (count > 0) {
+          steer.div(count);
+        }
+
+        // As long as the vector is greater than 0
+        if (steer.mag() > 0) {
+          // Implement Reynolds: Steering = Desired - Velocity
+          steer.normalize();
+          steer.mult(this.maxspeed);
+          steer.sub(this.velocity);
+          steer.limit(this.maxforce);
+        }
+        return steer;
+      }
+
+
+      Boid.prototype.align = function(boids) {
+        var neighbordist = 50;
+        var sum = createVector(0,0);
+        var count = 0;
+        for (var i = 0; i < boids.length; i++) {
+          var d = p5.Vector.dist(this.position,boids[i].position);
+          if ((d > 0) && (d < neighbordist)) {
+            sum.add(boids[i].velocity);
+            count++;
+          }
+        }
+        if (count > 0) {
+          sum.div(count);
+          sum.normalize();
+          sum.mult(this.maxspeed);
+          var steer = p5.Vector.sub(sum,this.velocity);
+          steer.limit(this.maxforce);
+          return steer;
+        } else {
+          return createVector(0,0);
+        }
+      }
+
+      Boid.prototype.seek = function(target) {
+        var desired = p5.Vector.sub(target,this.position);  // A vector pointing from the location to the target
+        // Normalize desired and scale to maximum speed
+        desired.normalize();
+        desired.mult(this.maxspeed);
+        // Steering = Desired minus Velocity
+        var steer = p5.Vector.sub(desired,this.velocity);
+        steer.limit(this.maxforce);  // Limit to maximum steering force
+        return steer;
+      }
+
+      Boid.prototype.cohesion = function(boids) {
+        var neighbordist = 50;
+        var sum = createVector(0,0);   // Start with empty vector to accumulate all locations
+        var count = 0;
+        for (var i = 0; i < boids.length; i++) {
+          var d = p5.Vector.dist(this.position,boids[i].position);
+          if ((d > 0) && (d < neighbordist)) {
+            sum.add(boids[i].position); // Add location
+            count++;
+          }
+        }
+        if (count > 0) {
+          sum.div(count);
+          return this.seek(sum);  // Steer towards the location
+        } else {
+          return createVector(0,0);
+        }
       }
 
       // Render's the BOID swarm in the canvas
