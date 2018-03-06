@@ -289,13 +289,17 @@
 
         if(simLight){
           this.applyForce(lightAttraction)
-        } else if (alignentSim){
+        } 
+        if (alignentSim){
           this.applyForce(alignment)
-        } else if (simAttraction) {
+        } 
+        if (simAttraction) {
           this.applyForce(attraction)
-        } else if (simAvoidance) {
+        }
+        if (simAvoidance) {
           this.applyForce(avoidance)
-        } else if (simCollision) {
+        } 
+        if (simCollision) {
           this.applyForce(collision)  
         }
 
