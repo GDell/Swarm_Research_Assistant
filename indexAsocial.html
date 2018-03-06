@@ -65,6 +65,7 @@
       <li><input class="behaviorCheckBox" id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
       <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
       <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
+      <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Avoidance" type="checkbox"> Collision</li>
     </ul>
 
     <ul class="behaviorList" style="list-style-type: none; float: right">
@@ -86,6 +87,11 @@
       <li>
         <div class="slidecontainer">
           <input type="range" min="1" max="100" value="50" class="slider" id="attractionRange">
+        </div>
+      </li>
+      <li>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="100" value="50" class="slider" id="collisionRange">
         </div>
       </li>
     </ul>
@@ -111,30 +117,34 @@
       var alignSlider = document.getElementById("alignmentRange");
       var avoidSlider = document.getElementById("avoidanceRange");
       var attractSlider = document.getElementById("attractionRange")
-      var lightSetting;
-      var alignSetting;
-      var avoidSetting;
-      var attractSetting;
+      var collisionSlider = document.getElementById("collisionRange");
+      var lightSetting = 50/100
+      var alignSetting = 50/100;
+      var avoidSetting = 50/100;
+      var attractSetting = 50/100;
+      var collisionSetting = 50/100;
+
 
       lightSlider.oninput = function() {
-          lightSetting = this.value;
-          console.log(lightSetting);
+          lightSetting = this.value/100;
+          console.log("Light attraction strength"+lightSetting);
       }
       alignSlider.oninput = function() {
-          alignSetting = this.value;
-          console.log(alignSetting);
+          alignSetting = this.value/100;
+          console.log("Alignment strength"+alignSetting);
       }
       avoidSlider.oninput = function() {
-          avoidSetting = this.value;
-          console.log(avoidSetting);
+          avoidSetting = this.value/100;
+          console.log("Social avoidance strength"+avoidSetting);
       }
       attractSlider.oninput = function() {
-          attractSetting = this.value;
-          console.log(attractSetting)
+          attractSetting = this.value/100;
+          console.log("Social attraction strength"+attractSetting)
       }
-
-
-
+      collisionSlider.oninput = function() {
+          collisionSetting = this.value/10;
+          console.log("Collision strength"+collisionSetting)
+      }
 
 
       var engine;
@@ -152,9 +162,6 @@
       var canvasHeight = 700;
       var centerStart = canvasHeight/2;
 
-      var lightAttractionStrength = .1;
-      var socialAttractionStrength = .4;
-      var collisionSensitivity = 3;
       var avoidanceDistance = 50;
 
       var simLight;
@@ -186,8 +193,8 @@
         };
 
         nIndividuals = prompt("Please enter the number of individuals to be included in the swarm: ", 25)
-        tempValue = prompt("Please enter attraction magnitude, a decimal between 0.0 and 1.0: ", .1)
-        lightAttractionStrength = parseFloat(tempValue)
+        // tempValue = prompt("Please enter attraction magnitude, a decimal between 0.0 and 1.0: ", .1)
+        // lightSetting = parseFloat(tempValue)
 
         createCanvas(canvasWidth, canvasHeight)
         
@@ -202,7 +209,7 @@
           var tempY = Math.randomGaussian(centerStart,spatialDistribution)
           var tempXV = Math.randomGaussian(baseVelocity,1)
           var tempYV = Math.randomGaussian(baseVelocity,1)
-          var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV, lightAttractionStrength);
+          var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV);
           flock.addBoid(newBoid);
         }
         Engine.run(engine);
@@ -271,13 +278,14 @@
         var alignmentSim = document.getElementById('alignCheckBox').checked;
         var simAttraction = document.getElementById('attractionCheckBox').checked;
         var simAvoidance = document.getElementById('avoidanceCheckBox').checked;
+        var simCollision = document.getElementById('collisionCheckBox').checked;
 
-
-     
         // Weight of the attraction force
-        lightAttraction.mult(this.attractVal)
-        collision.mult(collisionSensitivity)
-        attraction.mult(socialAttractionStrength)
+        lightAttraction.mult(lightSetting)
+        collision.mult(collisionSetting)
+        attraction.mult(attractSetting)
+        avoidance.mult(avoidSetting)
+        alignment.mult(alignSetting)
 
         if(simLight){
           this.applyForce(lightAttraction)
@@ -287,9 +295,10 @@
           this.applyForce(attraction)
         } else if (simAvoidance) {
           this.applyForce(avoidance)
+        } else if (simCollision) {
+          this.applyForce(collision)  
         }
 
-        this.applyForce(collision)  
       }
 
       Boid.prototype.update = function() {
@@ -460,7 +469,6 @@
         console.log("Boid loc: " +[boid.xPosition, boid.yPosition])
       }
 
-
       function computeCartDist(x1,x2,y1,y2) {
         var a = x1 - x2 
         var b = y1 - y2 
@@ -530,9 +538,6 @@
         Plotly.newPlot('myDiv', data, layout);
 
       }
-
-
-
 
   </script>
 </html>
