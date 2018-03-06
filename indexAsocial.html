@@ -1,19 +1,95 @@
 <!doctype html> 
   <head> 
+    <!-- <link rel="stylesheet" href="/public/styles/asocialStyling.css"> -->
+    <style type="text/css">
+      .slidecontainer {
+          width: 100%;
+
+      }
+
+      .slider {
+          -webkit-appearance: none;  /* Override default CSS styles */
+          appearance: none;
+          width: 100%; /* Full-width */
+          height: 25px; /* Specified height */
+          background: #d3d3d3; /* Grey background */
+          outline: none; /* Remove outline */
+          opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+      }
+
+      /* Mouse-over effects */
+      .slider:hover {
+          opacity: 1; /* Fully shown on mouse-over */
+      }
+
+      /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
+      .slider::-webkit-slider-thumb {
+          -webkit-appearance: none; /* Override default look */
+          appearance: none;
+          width: 25px; /* Set a specific slider handle width */
+          height: 25px; /* Slider handle height */
+          background: #4CAF50; /* Green background */
+          cursor: pointer; /* Cursor on hover */
+      }
+
+      .slider::-moz-range-thumb {
+          width: 25px; /* Set a specific slider handle width */
+          height: 25px; /* Slider handle height */
+          background: #4CAF50; /* Green background */
+          cursor: pointer;
+      }
+
+      .behaviorCheckBox {
+          margin: 8px;
+      }
+
+    </style>
   <meta charset>   
-    <h1 style=" margin-left: 30%;">Reynolds BOID model: Asocial</h1> 
+    <h1 style=" margin-left: 40%;">Reynolds BOID model</h1> 
   </head> 
 
   <body>
     
-   <div style="float: right" id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
-   <div style="clear: both; float: right">
-    <ul class="behaviorList" style="list-style-type: none; margin-right: 20%">
-      <li><input id="asocialCheckBox" title="Asocial" type="checkbox"> Asocial, light attraction</li>
-      <li><input id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
-      <li><input id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
-      <li><input id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
+   <div id="GSIdisplay" >
+      <h4 style="float: right; margin-right: 20%"> Group stability Index</h4>
+      <div id="myDiv" style="float: right; clear: both"><!-- Plotly chart will be drawn inside this DIV --></div>
+   </div>  
+
+   
+   <div style="clear: both; float: right; display: inline-block; margin-right: 8%">
+
+    <ul class="behaviorList" style="clear: both; list-style-type: none; float: left">
+      <li><input class="behaviorCheckBox" id="lightCheckBox" title="Asocial" type="checkbox"> Center light attraction</li>
+      <li><input class="behaviorCheckBox" id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
+      <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
+      <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
     </ul>
+
+    <ul class="behaviorList" style="list-style-type: none; float: right">
+      <li>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="100" value="50" class="slider" id="lightRange">
+        </div>
+      </li>
+      <li>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="100" value="50" class="slider" id="alignmentRange">
+        </div>
+      </li>
+      <li>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="100" value="50" class="slider" id="avoidanceRange">
+        </div>
+      </li>
+      <li>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="100" value="50" class="slider" id="attractionRange">
+        </div>
+      </li>
+    </ul>
+
    </div>
    
   </body>
@@ -29,6 +105,36 @@
       var World = Matter.World;
       var Bodies = Matter.Bodies;
       var Body = Matter.Body
+
+
+      var lightSlider = document.getElementById("lightRange");
+      var alignSlider = document.getElementById("alignmentRange");
+      var avoidSlider = document.getElementById("avoidanceRange");
+      var attractSlider = document.getElementById("attractionRange")
+      var lightSetting;
+      var alignSetting;
+      var avoidSetting;
+      var attractSetting;
+
+      lightSlider.oninput = function() {
+          lightSetting = this.value;
+          console.log(lightSetting);
+      }
+      alignSlider.oninput = function() {
+          alignSetting = this.value;
+          console.log(alignSetting);
+      }
+      avoidSlider.oninput = function() {
+          avoidSetting = this.value;
+          console.log(avoidSetting);
+      }
+      attractSlider.oninput = function() {
+          attractSetting = this.value;
+          console.log(attractSetting)
+      }
+
+
+
 
 
       var engine;
@@ -161,7 +267,7 @@
         var attraction = this.cohesion(boids)
         var avoidance = this. avoidance(boids, avoidanceDistance)
 
-        var simLight = document.getElementById('asocialCheckBox').checked;
+        var simLight = document.getElementById('lightCheckBox').checked;
         var alignmentSim = document.getElementById('alignCheckBox').checked;
         var simAttraction = document.getElementById('attractionCheckBox').checked;
         var simAvoidance = document.getElementById('avoidanceCheckBox').checked;
@@ -424,5 +530,9 @@
         Plotly.newPlot('myDiv', data, layout);
 
       }
+
+
+
+
   </script>
-</html>'
+</html>
