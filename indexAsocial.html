@@ -3,7 +3,7 @@
     <!-- <link rel="stylesheet" href="/public/styles/asocialStyling.css"> -->
     <style type="text/css">
       .slidecontainer {
-          width: 100%;
+          width: 310px;
 
       }
 
@@ -23,7 +23,6 @@
       .slider:hover {
           opacity: 1; /* Fully shown on mouse-over */
       }
-
       /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
       .slider::-webkit-slider-thumb {
           -webkit-appearance: none; /* Override default look */
@@ -42,7 +41,7 @@
       }
 
       .behaviorCheckBox {
-          margin: 8px;
+          margin: 10px;
       }
 
     </style>
@@ -58,9 +57,9 @@
    </div>  
 
    
-   <div style="clear: both; float: right; display: inline-block; margin-right: 8%">
+   <div style="clear: both; float: right; margin-right: 4%">
 
-    <ul class="behaviorList" style="clear: both; list-style-type: none; float: left">
+    <ul class="behaviorList" style="clear: both; list-style-type: none; float: left; padding-top: 7px">
       <li><input class="behaviorCheckBox" id="lightCheckBox" title="Asocial" type="checkbox"> Center light attraction</li>
       <li><input class="behaviorCheckBox" id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
       <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
@@ -68,7 +67,7 @@
       <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Avoidance" type="checkbox"> Collision</li>
     </ul>
 
-    <ul class="behaviorList" style="list-style-type: none; float: right">
+    <ul class="behaviorList" style="list-style-type: none; float: right; padding-top:10px">
       <li>
         <div class="slidecontainer">
           <input type="range" min="1" max="100" value="50" class="slider" id="lightRange">
@@ -96,6 +95,24 @@
       </li>
     </ul>
 
+    <ul style="list-style-type: none; float: right;">
+      <li>
+        <p id="lightDisplayVal"></p>
+      </li>
+      <li>
+        <p id="alignmentDisplayVal"></p>
+      </li>
+      <li>
+        <p id="attractionDisplayVal"></p>
+      </li>
+      <li>
+        <p id="avoidanceDisplayVal"></p>
+      </li>
+      <li>
+        <p id="collisionDisplayVal"></p>
+      </li>
+    </ul>
+
    </div>
    
   </body>
@@ -118,11 +135,14 @@
       var avoidSlider = document.getElementById("avoidanceRange");
       var attractSlider = document.getElementById("attractionRange")
       var collisionSlider = document.getElementById("collisionRange");
-      var lightSetting = 50/100
+      var lightSetting = 50/100;
       var alignSetting = 50/100;
       var avoidSetting = 50/100;
       var attractSetting = 50/100;
       var collisionSetting = 50/100;
+
+
+      
 
 
       lightSlider.oninput = function() {
@@ -216,6 +236,13 @@
       }
 
       function draw() {
+
+        document.getElementById("lightDisplayVal").innerHTML = lightSetting;
+        document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
+        document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
+        document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
+        document.getElementById("collisionDisplayVal").innerHTML = collisionSetting;
+
         background(51);
         prior = calculateGroupDist(flock);
         flock.step();
