@@ -1,7 +1,7 @@
 <!doctype html> 
   <head> 
     <link rel="stylesheet" href="/styles/asocialStyling.css">
-   
+    
   <meta charset>   
     <h1 style=" margin-left: 40%;">Reynolds BOID model</h1> 
   </head> 
@@ -19,9 +19,10 @@
     <ul class="behaviorList" style="clear: both; list-style-type: none; float: left; padding-top: 7px">
       <li><input class="behaviorCheckBox" id="lightCheckBox" title="Asocial" type="checkbox"> Center light attraction</li>
       <li><input class="behaviorCheckBox" id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
-      <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
-      <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
+      <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Attraction" type="checkbox"> Attraction</li>
+      <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
       <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Avoidance" type="checkbox"> Collision</li>
+      <li><input class="behaviorCheckBox" id="wrapCheckBox" title="Wrap" type="checkbox"> Wrap</li>
     </ul>
 
     <ul class="behaviorList" style="list-style-type: none; float: right; padding-top:10px">
@@ -74,13 +75,11 @@
    
   </body>
   
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+ <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script> -->
 
   <script src="/p5/p5.js"></script>
   <script src="/scripts/asocialReynolds.js"></script>
 
-
-  </script>
 </html>

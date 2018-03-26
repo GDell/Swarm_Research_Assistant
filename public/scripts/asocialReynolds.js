@@ -15,7 +15,7 @@
 // // #    GSI: Group Stability Index 
 // // #     # This is an index developed by Baldessare and colleagues (2003) to measure the stability of a 
 // // #     # swarm in their paper "Evolving mobile robots  able to display collective behaviors"
-	  var Engine = Matter.Engine;
+    var Engine = Matter.Engine;
       var World = Matter.World;
       var Bodies = Matter.Bodies;
       var Body = Matter.Body
@@ -33,8 +33,7 @@
       var collisionSetting = 50/100;
 
 
-      
-
+    
 
       lightSlider.oninput = function() {
           lightSetting = this.value/100;
@@ -62,6 +61,7 @@
       var world;
       var box1;
 
+
       // Starting Variables
       var nIndividuals = 50;
       var baseVelocity = 1;
@@ -73,6 +73,7 @@
       var canvasHeight = 700;
       var centerStart = canvasHeight/2;
 
+      
       var avoidanceDistance = 50;
 
       var simLight;
@@ -84,6 +85,8 @@
 
 
       function setup() {
+
+        var averageLocation = createVector(centerStart,centerStart);
 
         Math.randomGaussian = function(mean, standardDeviation) {
            if (Math.randomGaussian.nextGaussian !== undefined) {
@@ -136,10 +139,22 @@
 
         background(51);
         prior = calculateGroupDist(flock);
+
+        var ctx = document.getElementById('defaultCanvas0').getContext('2d');
+        ctx.save();
+        ctx.translate(averageLocation[0], averageLocation[1]);
+        ctx.restore();
+
         flock.step();
         post = calculateGroupDist(flock)
         currentGSI = calculateGSI(prior,post)
+
+    
+
+
         gsiLog.push(currentGSI)
+
+
         displayGSIlog(gsiLog)
       }
 
@@ -176,7 +191,13 @@
         this.flock(boids)
         // Update the boid
         this.update();
-        this.borders();
+
+        // WRAP BORDER TURNED OFF
+        var simWrap = document.getElementById('wrapCheckBox').checked;
+        if(simWrap) {
+          this.borders();
+        }
+        
         this.render();
       }
 
@@ -197,6 +218,7 @@
         var simAttraction = document.getElementById('attractionCheckBox').checked;
         var simAvoidance = document.getElementById('avoidanceCheckBox').checked;
         var simCollision = document.getElementById('collisionCheckBox').checked;
+        
 
         // Weight of the attraction force
         lightAttraction.mult(lightSetting)
@@ -399,14 +421,22 @@
       }
 
       function calculateGroupDist(swarm) {
-        var groupedDistance = 0
+        var groupedDistance = 0;
+        var tempAvg = createVector(0,0);
+
         for(i=0; i<nIndividuals; i++) {
+
+          tempAvg = tempAvg.add(swarm.boids[i].position.x, swarm.boids[i].position.x);
+
           for(j=0;j<nIndividuals; j++) {
+
+
             var tempDist = computeCartDist(swarm.boids[i].position.x,swarm.boids[j].position.x,swarm.boids[i].position.y, swarm.boids[j].position.y);
             // console.log(tempDist)
             groupedDistance = groupedDistance + tempDist;
           } 
         }
+        averageLocation = tempAvg;
         // console.log("Grouped distance: "+groupedDistance)
         return groupedDistance;
       }
