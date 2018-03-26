@@ -10,25 +10,25 @@ var matter = 'matter.js'
 // var reynolds = require("./asocialReynolds.js");
 
 // HTML page loads
-var reynoldsOriginalHTML = fs.readFileSync('./indexOriginal.html');
-var reynoldsAsocialHTML = fs.readFileSync('./indexAsocial.html');
-var reynoldsPhysicsHTML = fs.readFileSync('./indexPhysics.html');
+var reynoldsBasicHTML = fs.readFileSync('./indexOriginal.html');
+var reynoldsSimHTML = fs.readFileSync('./indexAsocial.html');
+var reynoldsMatterPhysHTML = fs.readFileSync('./indexPhysics.html');
 
 
 app.use("/", express.static(__dirname + '/public'));
 
 app
-	.get('/asocial', function (request, response) {
-	  	var htmlRes =  reynoldsAsocialHTML;
+	// .get('/asocial', function (request, response) {
+	//   	var htmlRes =  reynoldsSimHTML;
 
-		response.writeHead(200, {'Content-Type': 'text/html'});
+	// 	response.writeHead(200, {'Content-Type': 'text/html'});
 
-		response.write(htmlRes)
+	// 	response.write(htmlRes)
 
-		response.end();
-	})
+	// 	response.end();
+	// })
 	.get('/', function (request, response) {
-	  	var htmlRes =  reynoldsOriginalHTML;
+	  	var htmlRes =  reynoldsSimHTML;
 
 		response.writeHead(200, {'Content-Type': 'text/html'});
 
@@ -36,15 +36,15 @@ app
 
 		response.end();
 	})
-	.get('/phys', function(request, response) {
-		var htmlRes =  reynoldsPhysicsHTML;
+	// .get('/phys', function(request, response) {
+	// 	var htmlRes =  reynoldsMatterPhysHTML;
 
-		response.writeHead(200, {'Content-Type': 'text/html'});
+	// 	response.writeHead(200, {'Content-Type': 'text/html'});
 
-		response.write(htmlRes)
+	// 	response.write(htmlRes)
 
-		response.end();
-	})
+	// 	response.end();
+	// })
 // // var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });\
 // //Create HTTP server and listen on port 8000 for requests
 // http.createServer(function() {
