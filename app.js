@@ -6,6 +6,18 @@ var http = require("http");
 var config = require('config');
 var matter = 'matter.js'
 
+// Connecting to Database
+var mongoose = require('mongoose');
+var mongoDB = 'mongodb://localhost:27017';
+mongoose.connect(mongoDB);
+// Get Mongoose to use the global promise library
+mongoose.Promise = global.Promise;
+//Get the default connection
+var db = mongoose.connection;
+
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
 // Javscript loads
 // var reynolds = require("./asocialReynolds.js");
 
@@ -18,15 +30,6 @@ var reynoldsMatterPhysHTML = fs.readFileSync('./indexPhysics.html');
 app.use("/", express.static(__dirname + '/public'));
 
 app
-	// .get('/asocial', function (request, response) {
-	//   	var htmlRes =  reynoldsSimHTML;
-
-	// 	response.writeHead(200, {'Content-Type': 'text/html'});
-
-	// 	response.write(htmlRes)
-
-	// 	response.end();
-	// })
 	.get('/', function (request, response) {
 	  	var htmlRes =  reynoldsSimHTML;
 
@@ -36,6 +39,15 @@ app
 
 		response.end();
 	})
+	// .get('/asocial', function (request, response) {
+	//   	var htmlRes =  reynoldsSimHTML;
+
+	// 	response.writeHead(200, {'Content-Type': 'text/html'});
+
+	// 	response.write(htmlRes)
+
+	// 	response.end();
+	// })
 	// .get('/phys', function(request, response) {
 	// 	var htmlRes =  reynoldsMatterPhysHTML;
 

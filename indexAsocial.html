@@ -19,11 +19,80 @@
     <ul class="behaviorList" style="clear: both; list-style-type: none; float: left; padding-top: 7px">
       <li><input class="behaviorCheckBox" id="lightCheckBox" title="Asocial" type="checkbox"> Center light attraction</li>
       <li><input class="behaviorCheckBox" id="alignCheckBox" title="Align" type="checkbox"> Alignment</li>
-      <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Attraction" type="checkbox"> Attraction</li>
-      <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
-      <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Avoidance" type="checkbox"> Collision</li>
+      <li><input class="behaviorCheckBox" id="attractionCheckBox" title="Attraction" type="checkbox"> Attraction</li>
+      <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
+      <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Collision" type="checkbox"> Collision</li>
       <li><input class="behaviorCheckBox" id="wrapCheckBox" title="Wrap" type="checkbox"> Wrap</li>
+      <li >
+        <script type="text/javascript">   
+
+                function convertArrayOfObjectsToCSV(args) {  
+                    var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+                    data = args.data || null;
+                    if (data == null || !data.length) {
+                        return null;
+                    }
+
+                    columnDelimiter = args.columnDelimiter || ',';
+                    lineDelimiter = args.lineDelimiter || '\n';
+
+                    keys = Object.keys(data[0]);
+
+                    result = '';
+                    result += keys.join(columnDelimiter);
+                    result += lineDelimiter;
+
+                    data.forEach(function(item) {
+                        ctr = 0;
+                        keys.forEach(function(key) {
+                            if (ctr > 0) result += columnDelimiter;
+
+                            result += item[key];
+                            ctr++;
+                        });
+                        result += lineDelimiter;
+                    });
+
+                  return result;
+                }
+
+           
+                function downloadCSV(args) { 
+
+                        console.log(args)
+
+                        if(once) {
+                          var data, filename, link;
+                          var csv = convertArrayOfObjectsToCSV(args);
+                          if (csv == null) return;
+
+                          filename = args.filename || 'export.csv';
+
+                          if (!csv.match(/^data:text\/csv/i)) {
+                              csv = 'data:text/csv;charset=utf-8,' + csv;
+                          }
+                          data = encodeURI(csv);
+
+                          link = document.createElement('a');
+                          link.setAttribute('href', data);
+                          link.setAttribute('download', filename);
+                          link.click();
+                        }
+
+             
+                        
+                }
+
+
+
+        </script>
+
+        <button id="downloadGSI" onclick="downloadCSV(gsiLog)">Download GSI</button>
+      </li>
     </ul>
+
+
 
     <ul class="behaviorList" style="list-style-type: none; float: right; padding-top:10px">
       <li>
@@ -38,12 +107,12 @@
       </li>
       <li>
         <div class="slidecontainer">
-          <input type="range" min="1" max="100" value="50" class="slider" id="avoidanceRange">
+          <input type="range" min="1" max="100" value="50" class="slider" id="attractionRange">
         </div>
       </li>
       <li>
         <div class="slidecontainer">
-          <input type="range" min="1" max="100" value="50" class="slider" id="attractionRange">
+          <input type="range" min="1" max="100" value="50" class="slider" id="avoidanceRange">
         </div>
       </li>
       <li>
@@ -69,6 +138,7 @@
       <li>
         <p id="collisionDisplayVal"></p>
       </li>
+      
     </ul>
 
    </div>
