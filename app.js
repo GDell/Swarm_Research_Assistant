@@ -33,12 +33,32 @@ app
 	.get('/', function (request, response) {
 	  	var htmlRes =  reynoldsSimHTML;
 
+	  	
+
 		response.writeHead(200, {'Content-Type': 'text/html'});
 
 		response.write(htmlRes)
 
 		response.end();
 	})
+	.post('/', function (request,response) {
+
+		var dataTemp = "";
+		var finalObj;
+		request.on('data', function (chunk) {
+			dataTemp = dataTemp + chunk
+
+			finalObj = JSON.parse(dataTemp)
+
+			console.log(finalObj)
+        	// console.log('GOT DATA!');
+    	});
+
+    	console.log(finalObj)
+		// console.log()
+	} )
+
+	
 	// .get('/asocial', function (request, response) {
 	//   	var htmlRes =  reynoldsSimHTML;
 
@@ -76,6 +96,8 @@ app
 
 // // Designates the port as 3000
 // }).listen(3000); 
+
+
 
 
 

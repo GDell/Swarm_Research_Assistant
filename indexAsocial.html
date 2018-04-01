@@ -1,8 +1,9 @@
-<!doctype html> 
   <head> 
+
     <link rel="stylesheet" href="/styles/asocialStyling.css">
     
-  <meta charset>   
+  <meta charset>
+
     <h1 style=" margin-left: 40%;">Reynolds BOID model</h1> 
   </head> 
 
@@ -24,69 +25,6 @@
       <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Collision" type="checkbox"> Collision</li>
       <li><input class="behaviorCheckBox" id="wrapCheckBox" title="Wrap" type="checkbox"> Wrap</li>
       <li >
-        <script type="text/javascript">   
-
-                function convertArrayOfObjectsToCSV(args) {  
-                    var result, ctr, keys, columnDelimiter, lineDelimiter, data;
-
-                    data = args.data || null;
-                    if (data == null || !data.length) {
-                        return null;
-                    }
-
-                    columnDelimiter = args.columnDelimiter || ',';
-                    lineDelimiter = args.lineDelimiter || '\n';
-
-                    keys = Object.keys(data[0]);
-
-                    result = '';
-                    result += keys.join(columnDelimiter);
-                    result += lineDelimiter;
-
-                    data.forEach(function(item) {
-                        ctr = 0;
-                        keys.forEach(function(key) {
-                            if (ctr > 0) result += columnDelimiter;
-
-                            result += item[key];
-                            ctr++;
-                        });
-                        result += lineDelimiter;
-                    });
-
-                  return result;
-                }
-
-           
-                function downloadCSV(args) { 
-
-                        console.log(args)
-
-                        if(once) {
-                          var data, filename, link;
-                          var csv = convertArrayOfObjectsToCSV(args);
-                          if (csv == null) return;
-
-                          filename = args.filename || 'export.csv';
-
-                          if (!csv.match(/^data:text\/csv/i)) {
-                              csv = 'data:text/csv;charset=utf-8,' + csv;
-                          }
-                          data = encodeURI(csv);
-
-                          link = document.createElement('a');
-                          link.setAttribute('href', data);
-                          link.setAttribute('download', filename);
-                          link.click();
-                        }
-
-             
-                        
-                }
-
-
-
-        </script>
 
         <button id="downloadGSI" onclick="downloadCSV(gsiLog)">Download GSI</button>
       </li>
@@ -151,5 +89,25 @@
 
   <script src="/p5/p5.js"></script>
   <script src="/scripts/asocialReynolds.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
+  <script type="text/javascript">
 
+            function downloadCSV(args) { 
+                var data = {};
+                data.GSIlog = args;
+                
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                            url: 'http://localhost:3000/',            
+                            success: function(data) {
+                                console.log('success');
+                                console.log(JSON.stringify(data));
+                    }
+                });
+                        
+            }      
+
+  </script>
 </html>
