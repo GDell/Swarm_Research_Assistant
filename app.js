@@ -9,6 +9,7 @@ var matter = 'matter.js'
 // Connecting to Database
 var mongoose = require('mongoose');
 var mongoDB = 'mongodb://localhost:27017';
+var MongoClient = require('mongodb').MongoClient;
 mongoose.connect(mongoDB);
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
@@ -80,11 +81,18 @@ app
 				}
 			});
 
-
-
-
-			console.log(t)
-        	// console.log('GOT DATA!');
+			MongoClient.connect(mongoDB, function(err, db) {
+			  if (err) throw err;
+			  var dbo = db.db();
+			 	var query = {trialName:"trial1"};
+			  dbo.collection("trials").find(query).toArray(function(err, result) {
+			    if (err) throw err;
+			    console.log(result);
+			    db.close();
+			  });
+			});
+			// console.log(t)
+        	console.log('GOT DATA!');
     	});
 
 		// console.log()
