@@ -15,6 +15,18 @@ mongoose.Promise = global.Promise;
 //Get the default connection
 var db = mongoose.connection;
 
+
+var Schema = mongoose.Schema;
+
+var trialSchema = new Schema(
+{
+	trialName: {type: String, required: true, max:100},
+	gsiLog: {type:String, required:true, max:5000}
+}
+);
+
+
+
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
@@ -43,18 +55,38 @@ app
 	})
 	.post('/', function (request,response) {
 
+		var tempTrial = mongoose.model('trial', trialSchema);
+		
+
 		var dataTemp = "";
 		var finalObj;
 		request.on('data', function (chunk) {
+			
 			dataTemp = dataTemp + chunk
 
 			finalObj = JSON.parse(dataTemp)
 
-			console.log(finalObj)
+			var t = new tempTrial({
+				trialName: finalObj.name,
+				gsiLog: finalObj.GSIlog
+			});
+
+
+			t.save(function(err){
+				if(err) {
+					throw err;
+				} else{
+					console.log("Trial saved successfully")
+				}
+			});
+
+
+
+
+			console.log(t)
         	// console.log('GOT DATA!');
     	});
 
-    	console.log(finalObj)
 		// console.log()
 	} )
 
