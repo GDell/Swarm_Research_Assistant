@@ -86,6 +86,7 @@
       var pauseState = true;
 
 
+
       function setup() {
 
         var averageLocation = createVector(centerStart,centerStart);
@@ -139,14 +140,18 @@
         document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
         document.getElementById("collisionDisplayVal").innerHTML = collisionSetting;
 
+        document.getElementById("resetButton").onclick = function() {
+            reset();
+        }
+
         var buttonText = document.getElementById("pauseButton").innerHTML;
 
         document.getElementById("pauseButton").onclick = function() {
             pauseState = !pauseState;
             if (pauseState == true) {
-              document.getElementById("pauseButton").innerHTML = "Start Swarm"
+              document.getElementById("pauseButton").innerHTML = "&#9658"
             } else if (pauseState == false) {
-              document.getElementById("pauseButton").innerHTML = "Pause Swarm"
+              document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
             }
         }
 
@@ -171,6 +176,42 @@
         flock.display();
         displayGSIlog(gsiLog)
       }
+
+      function reset() {
+        Math.randomGaussian = function(mean, standardDeviation) {
+           if (Math.randomGaussian.nextGaussian !== undefined) {
+               var nextGaussian = Math.randomGaussian.nextGaussian;
+               delete Math.randomGaussian.nextGaussian;
+               return (nextGaussian * standardDeviation) + mean;
+           } else {
+               var v1, v2, s, multiplier;
+               do {
+                   v1 = 2 * Math.random() - 1; // between -1 and 1
+                   v2 = 2 * Math.random() - 1; // between -1 and 1
+                   s = v1 * v1 + v2 * v2;
+               } while (s >= 1 || s == 0);
+               multiplier = Math.sqrt(-2 * Math.log(s) / s);
+               Math.randomGaussian.nextGaussian = v2 * multiplier;
+               return (v1 * multiplier * standardDeviation) + mean;
+           }
+        };
+
+        nIndividuals = prompt("Please enter the number of individuals to be included in the swarm: ", 25)
+        flock = new Flock()
+        // Generate the starting swarm.
+        for(var o = 0; o <nIndividuals; o++) {
+          var tempX = Math.randomGaussian(centerStart,spatialDistribution)
+          var tempY = Math.randomGaussian(centerStart,spatialDistribution)
+          var tempXV = Math.randomGaussian(baseVelocity,1)
+          var tempYV = Math.randomGaussian(baseVelocity,1)
+          var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV);
+          flock.addBoid(newBoid);
+        }
+
+        gsiLog = []
+        flock.display()
+      }
+
 
       function Flock() {
         this.boids = [];
