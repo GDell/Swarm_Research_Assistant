@@ -15,75 +15,74 @@
 // // #    GSI: Group Stability Index 
 // // #     # This is an index developed by Baldessare and colleagues (2003) to measure the stability of a 
 // // #     # swarm in their paper "Evolving mobile robots  able to display collective behaviors"
-    var Engine = Matter.Engine;
-      var World = Matter.World;
-      var Bodies = Matter.Bodies;
-      var Body = Matter.Body
+// var Engine = Matter.Engine;
+// var World = Matter.World;
+// var Bodies = Matter.Bodies;
+// var Body = Matter.Body
 
 
-      var lightSlider = document.getElementById("lightRange");
-      var alignSlider = document.getElementById("alignmentRange");
-      var avoidSlider = document.getElementById("avoidanceRange");
-      var attractSlider = document.getElementById("attractionRange")
-      var collisionSlider = document.getElementById("collisionRange");
-      var lightSetting = 50/100;
-      var alignSetting = 50/100;
-      var avoidSetting = 50/100;
-      var attractSetting = 50/100;
-      var collisionSetting = 50/100;
+var lightSlider = document.getElementById("lightRange");
+var alignSlider = document.getElementById("alignmentRange");
+var avoidSlider = document.getElementById("avoidanceRange");
+var attractSlider = document.getElementById("attractionRange")
+var collisionSlider = document.getElementById("collisionRange");
+var lightSetting = 50/100;
+var alignSetting = 50/100;
+var avoidSetting = 50/100;
+var attractSetting = 50/100;
+var collisionSetting = 50/10;
 
 
-    
-
-      lightSlider.oninput = function() {
-          lightSetting = this.value/100;
-          console.log("Light attraction strength"+lightSetting);
-      }
-      alignSlider.oninput = function() {
-          alignSetting = this.value/100;
-          console.log("Alignment strength"+alignSetting);
-      }
-      avoidSlider.oninput = function() {
-          avoidSetting = this.value/100;
-          console.log("Social avoidance strength"+avoidSetting);
-      }
-      attractSlider.oninput = function() {
-          attractSetting = this.value/100;
-          console.log("Social attraction strength"+attractSetting)
-      }
-      collisionSlider.oninput = function() {
-          collisionSetting = this.value/10;
-          console.log("Collision strength"+collisionSetting)
-      }
+lightSlider.oninput = function() {
+  lightSetting = this.value/100;
+  console.log("Light attraction strength"+lightSetting);
+}
+alignSlider.oninput = function() {
+  alignSetting = this.value/100;
+  console.log("Alignment strength"+alignSetting);
+}
+avoidSlider.oninput = function() {
+  avoidSetting = this.value/100;
+  console.log("Social avoidance strength"+avoidSetting);
+}
+attractSlider.oninput = function() {
+  attractSetting = this.value/100;
+  console.log("Social attraction strength"+attractSetting)
+}
+collisionSlider.oninput = function() {
+  collisionSetting = this.value/1.0;
+  console.log("Collision strength"+collisionSetting)
+}
 
 
-      var engine;
-      var world;
-      var box1;
+
+// var engine;
+// var world;
+var box1;
 
 
-      // Starting Variables
-      var nIndividuals = 50;
-      var baseVelocity = 1;
-      var spatialDistribution = 100;
-      // Starting average location for the swarm.
-      var bodySize = 8;
+// Starting Variables
+var nIndividuals = 50;
+var baseVelocity = 1;
+var spatialDistribution = 100;
+// Starting average location for the swarm.
+var bodySize = 8;
 
-      var canvasWidth = 700;
-      var canvasHeight = 700;
-      var centerStart = canvasHeight/2;
+var canvasWidth = 700;
+var canvasHeight = 700;
+var centerStart = canvasHeight/2;
 
-      
-      var avoidanceDistance = 50;
 
-      var simLight;
-      var simAttraction;
-      var alignentSim;
+var avoidanceDistance = 50;
 
-      var flock; 
-      var gsiLog = []
+var simLight;
+var simAttraction;
+var alignentSim;
 
-      var pauseState = true;
+var flock; 
+var gsiLog = []
+
+var pauseState = true;
 
 
 
@@ -93,13 +92,13 @@
 
         createCanvas(canvasWidth, canvasHeight)
         
-        engine = Engine.create();
-        engine.world.gravity.y = 0;
-        world = engine.world;
+        // engine = Engine.create();
+        // engine.world.gravity.y = 0;
+        // world = engine.world;
 
       
         initialize()
-        Engine.run(engine);
+        // Engine.run(engine);
       }
 
       function draw() {
@@ -108,7 +107,7 @@
         document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
         document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
         document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
-        document.getElementById("collisionDisplayVal").innerHTML = collisionSetting;
+        document.getElementById("collisionDisplayVal").innerHTML = collisionSetting/100;
 
         document.getElementById("resetButton").onclick = function() {
             reset();
@@ -119,24 +118,24 @@
         document.getElementById("pauseButton").onclick = function() {
             pauseState = !pauseState;
             if (pauseState == true) {
+              //Play Button
               document.getElementById("pauseButton").innerHTML = "&#9658"
             } else if (pauseState == false) {
+              //Pause Button
               document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
             }
         }
 
-
-
-
         background(51);
 
-        if (pauseState == false) {
-           prior = calculateGroupDist(flock);
-          var ctx = document.getElementById('defaultCanvas0').getContext('2d');
-          ctx.save();
-          ctx.translate(averageLocation[0], averageLocation[1]);
-          ctx.restore();
+        if (!pauseState) {
+          prior = calculateGroupDist(flock);
+          // var ctx = document.getElementById('defaultCanvas0').getContext('2d');
+          // ctx.save();
+          // ctx.translate(averageLocation[0], averageLocation[1]);
+          // ctx.restore();
           flock.step();
+          flock.display();
           post = calculateGroupDist(flock)
           currentGSI = calculateGSI(prior,post)
           gsiLog.push(currentGSI)
@@ -189,7 +188,6 @@
         if (pauseState == false) {
           document.getElementById("pauseButton").click()
         }
-        
         flock.display();
       }
 
@@ -224,8 +222,8 @@
         this.attractVal = aVal;
         this.maxspeed = 3;
         this.maxforce = 0.05;
-        this.body = Bodies.circle(xvel, yvel, bodySize, bodySize)
-        World.add(world, this.body);
+        // this.body = Bodies.circle(xvel, yvel, bodySize, bodySize)
+        // World.add(world, this.body);
       }
 
 
@@ -241,13 +239,14 @@
           this.borders();
         }
         
-        this.render();
       }
 
+      // Renders a boid on the HTML canvas
       Boid.prototype.rend = function(boids) {        
         this.render();
       }
 
+      // Applys acceleration to a BOID
       Boid.prototype.applyForce = function(force) {
         this.acceleration.add(force)
       }
@@ -265,8 +264,7 @@
         var simAttraction = document.getElementById('attractionCheckBox').checked;
         var simAvoidance = document.getElementById('avoidanceCheckBox').checked;
         var simCollision = document.getElementById('collisionCheckBox').checked;
-        
-
+      
         // Weight of the attraction force
         lightAttraction.mult(lightSetting)
         collision.mult(collisionSetting)
@@ -311,7 +309,7 @@
       }
 
       Boid.prototype.collide = function(boids) {
-        var desiredseparation = 10;
+        var desiredseparation = 7;
         var steer = createVector(0,0);
         var count = 0;
         // For every boid in the system, check if it's too close
@@ -441,8 +439,8 @@
         rotate(theta);
         beginShape();
         vertex(0, -this.r*2);
-        vertex(-this.r, this.r*2);
-        vertex(this.r, this.r*2);
+        vertex(-this.r, this.r*1);
+        vertex(this.r, this.r*1);
         endShape(CLOSE);
         pop();
       }
@@ -528,8 +526,10 @@
 
         var layout = {
           xaxis: {
+            title: "Time Step"
           },
           yaxis: {
+            title: "Group Stability",
             range: [0,1]
           }
         };        
