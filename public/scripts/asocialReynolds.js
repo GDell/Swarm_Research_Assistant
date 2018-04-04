@@ -91,44 +91,14 @@
 
         var averageLocation = createVector(centerStart,centerStart);
 
-        Math.randomGaussian = function(mean, standardDeviation) {
-           if (Math.randomGaussian.nextGaussian !== undefined) {
-               var nextGaussian = Math.randomGaussian.nextGaussian;
-               delete Math.randomGaussian.nextGaussian;
-               return (nextGaussian * standardDeviation) + mean;
-           } else {
-               var v1, v2, s, multiplier;
-               do {
-                   v1 = 2 * Math.random() - 1; // between -1 and 1
-                   v2 = 2 * Math.random() - 1; // between -1 and 1
-                   s = v1 * v1 + v2 * v2;
-               } while (s >= 1 || s == 0);
-               multiplier = Math.sqrt(-2 * Math.log(s) / s);
-               Math.randomGaussian.nextGaussian = v2 * multiplier;
-               return (v1 * multiplier * standardDeviation) + mean;
-           }
-        };
-
-        nIndividuals = prompt("Please enter the number of individuals to be included in the swarm: ", 25)
-        // tempValue = prompt("Please enter attraction magnitude, a decimal between 0.0 and 1.0: ", .1)
-        // lightSetting = parseFloat(tempValue)
-
         createCanvas(canvasWidth, canvasHeight)
         
         engine = Engine.create();
         engine.world.gravity.y = 0;
         world = engine.world;
-            
-        flock = new Flock()
-        // Generate the starting swarm.
-        for(var o = 0; o <nIndividuals; o++) {
-          var tempX = Math.randomGaussian(centerStart,spatialDistribution)
-          var tempY = Math.randomGaussian(centerStart,spatialDistribution)
-          var tempXV = Math.randomGaussian(baseVelocity,1)
-          var tempYV = Math.randomGaussian(baseVelocity,1)
-          var newBoid = new Boid(o, tempX, tempY, tempXV, tempYV);
-          flock.addBoid(newBoid);
-        }
+
+      
+        initialize()
         Engine.run(engine);
       }
 
@@ -177,7 +147,8 @@
         displayGSIlog(gsiLog)
       }
 
-      function reset() {
+
+      function initialize() {
         Math.randomGaussian = function(mean, standardDeviation) {
            if (Math.randomGaussian.nextGaussian !== undefined) {
                var nextGaussian = Math.randomGaussian.nextGaussian;
@@ -208,8 +179,18 @@
           flock.addBoid(newBoid);
         }
 
-        gsiLog = []
-        flock.display()
+        gsiLog = [];
+      }
+
+
+      // This function resets the swarm and GSI log while pausing the simulation.
+      function reset() {
+        initialize();
+        if (pauseState == false) {
+          document.getElementById("pauseButton").click()
+        }
+        
+        flock.display();
       }
 
 
