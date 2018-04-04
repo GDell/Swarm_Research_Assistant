@@ -83,6 +83,8 @@
       var flock; 
       var gsiLog = []
 
+      var pauseState = true;
+
 
       function setup() {
 
@@ -137,30 +139,49 @@
         document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
         document.getElementById("collisionDisplayVal").innerHTML = collisionSetting;
 
+        var buttonText = document.getElementById("pauseButton").innerHTML;
+
+        document.getElementById("pauseButton").onclick = function() {
+            pauseState = !pauseState;
+            if (pauseState == true) {
+              document.getElementById("pauseButton").innerHTML = "Start Swarm"
+            } else if (pauseState == false) {
+              document.getElementById("pauseButton").innerHTML = "Pause Swarm"
+            }
+        }
+
+
+
+
         background(51);
-        prior = calculateGroupDist(flock);
 
-        var ctx = document.getElementById('defaultCanvas0').getContext('2d');
-        ctx.save();
-        ctx.translate(averageLocation[0], averageLocation[1]);
-        ctx.restore();
+        if (pauseState == false) {
+           prior = calculateGroupDist(flock);
+          var ctx = document.getElementById('defaultCanvas0').getContext('2d');
+          ctx.save();
+          ctx.translate(averageLocation[0], averageLocation[1]);
+          ctx.restore();
+          flock.step();
+          post = calculateGroupDist(flock)
+          currentGSI = calculateGSI(prior,post)
+          gsiLog.push(currentGSI)
+        }
+       
 
-        flock.step();
-        post = calculateGroupDist(flock)
-        currentGSI = calculateGSI(prior,post)
-
-    
-
-
-        gsiLog.push(currentGSI)
-
-
+        flock.display();
         displayGSIlog(gsiLog)
       }
 
       function Flock() {
         this.boids = [];
       }
+
+      Flock.prototype.display = function() {
+        for(var i =0; i < this.boids.length; i++) {
+          this.boids[i].rend(this.boids)
+        }
+      }
+
       // To step the flock, step each individual Boid. 
       Flock.prototype.step = function() {
         for(var i =0; i < this.boids.length; i++) {
@@ -198,6 +219,10 @@
           this.borders();
         }
         
+        this.render();
+      }
+
+      Boid.prototype.rend = function(boids) {        
         this.render();
       }
 
