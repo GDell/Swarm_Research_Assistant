@@ -94,8 +94,6 @@ function setup() {
   // engine = Engine.create();
   // engine.world.gravity.y = 0;
   // world = engine.world;
-
-
   initialize()
   // Engine.run(engine);
 }
@@ -106,7 +104,7 @@ function draw() {
   document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
   document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
   document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
-  document.getElementById("collisionDisplayVal").innerHTML = collisionSetting/100;
+  document.getElementById("collisionDisplayVal").innerHTML = collisionSlider.value/100;
 
   document.getElementById("resetButton").onclick = function() {
       reset();
