@@ -85,66 +85,64 @@ var gsiLog = []
 var pauseState = true;
 
 
+function setup() {
 
-      function setup() {
+  var averageLocation = createVector(centerStart,centerStart);
 
-        var averageLocation = createVector(centerStart,centerStart);
+  createCanvas(canvasWidth, canvasHeight)
+  
+  // engine = Engine.create();
+  // engine.world.gravity.y = 0;
+  // world = engine.world;
 
-        createCanvas(canvasWidth, canvasHeight)
-        
-        // engine = Engine.create();
-        // engine.world.gravity.y = 0;
-        // world = engine.world;
 
-      
-        initialize()
-        // Engine.run(engine);
+  initialize()
+  // Engine.run(engine);
+}
+
+function draw() {
+
+  document.getElementById("lightDisplayVal").innerHTML = lightSetting;
+  document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
+  document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
+  document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
+  document.getElementById("collisionDisplayVal").innerHTML = collisionSetting/100;
+
+  document.getElementById("resetButton").onclick = function() {
+      reset();
+  }
+
+  var buttonText = document.getElementById("pauseButton").innerHTML;
+
+  document.getElementById("pauseButton").onclick = function() {
+      pauseState = !pauseState;
+      if (pauseState == true) {
+        //Play Button
+        document.getElementById("pauseButton").innerHTML = "&#9658"
+      } else if (pauseState == false) {
+        //Pause Button
+        document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
       }
+  }
 
-      function draw() {
+  background(51);
 
-        document.getElementById("lightDisplayVal").innerHTML = lightSetting;
-        document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
-        document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
-        document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
-        document.getElementById("collisionDisplayVal").innerHTML = collisionSetting/100;
-
-        document.getElementById("resetButton").onclick = function() {
-            reset();
-        }
-
-        var buttonText = document.getElementById("pauseButton").innerHTML;
-
-        document.getElementById("pauseButton").onclick = function() {
-            pauseState = !pauseState;
-            if (pauseState == true) {
-              //Play Button
-              document.getElementById("pauseButton").innerHTML = "&#9658"
-            } else if (pauseState == false) {
-              //Pause Button
-              document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
-            }
-        }
-
-        background(51);
-
-        if (!pauseState) {
-          prior = calculateGroupDist(flock);
-          // var ctx = document.getElementById('defaultCanvas0').getContext('2d');
-          // ctx.save();
-          // ctx.translate(averageLocation[0], averageLocation[1]);
-          // ctx.restore();
-          flock.step();
-          flock.display();
-          post = calculateGroupDist(flock)
-          currentGSI = calculateGSI(prior,post)
-          gsiLog.push(currentGSI)
-        }
-       
-
-        flock.display();
-        displayGSIlog(gsiLog)
-      }
+  if (!pauseState) {
+    prior = calculateGroupDist(flock);
+    // var ctx = document.getElementById('defaultCanvas0').getContext('2d');
+    // ctx.save();
+    // ctx.translate(averageLocation[0], averageLocation[1]);
+    // ctx.restore();
+    flock.step();
+    flock.display();
+    post = calculateGroupDist(flock)
+    currentGSI = calculateGSI(prior,post)
+    gsiLog.push(currentGSI)
+  }
+ 
+  flock.display();
+  displayGSIlog(gsiLog)
+}
 
 
       function initialize() {
@@ -225,7 +223,6 @@ var pauseState = true;
         // this.body = Bodies.circle(xvel, yvel, bodySize, bodySize)
         // World.add(world, this.body);
       }
-
 
       Boid.prototype.step = function(boids) {
         // Step each boid
@@ -537,3 +534,23 @@ var pauseState = true;
         Plotly.newPlot('myDiv', data, layout);
 
       }
+
+      function downloadCSV(args) { 
+
+                var nameTrial = prompt("Please enter the number of individuals to be included in the swarm: ", "exampleTrial")
+                var data = {};
+                data.name = nameTrial;
+                data.GSIlog = args;
+                
+                $.ajax({
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                            url: 'http://localhost:3000/',            
+                            success: function(data) {
+                                console.log('success');
+                                console.log(JSON.stringify(data));
+                    }
+                });
+                        
+            }      

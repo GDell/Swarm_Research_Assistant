@@ -1,7 +1,5 @@
   <head> 
-
     <link rel="stylesheet" href="/styles/asocialStyling.css">
-    
   <meta charset>
 
     <h1 style=" margin-left: 40%;">Reynolds BOID model</h1> 
@@ -24,7 +22,7 @@
       <li><input class="behaviorCheckBox" id="avoidanceCheckBox" title="Avoidance" type="checkbox"> Avoidance</li>
       <li><input class="behaviorCheckBox" id="collisionCheckBox" title="Collision" type="checkbox"> Collision</li>
       <li><input class="behaviorCheckBox" id="wrapCheckBox" title="Wrap" type="checkbox"> Wrap</li>
-      <li >
+      <li>
         <button id="pauseButton">
           &#9658
         </button>
@@ -34,8 +32,6 @@
         </button>
       </li>
     </ul>
-
-
 
     <ul class="behaviorList" style="list-style-type: none; float: right; padding-top:10px">
       <li>
@@ -97,23 +93,29 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
   <script type="text/javascript">
 
-            function downloadCSV(args) { 
-                var data = {};
-                data.name = "trial1";
-                data.GSIlog = args;
+
+
+
+
+            // function downloadCSV(args) { 
+
                 
-                $.ajax({
-                    type: 'POST',
-                    data: JSON.stringify(data),
-                    contentType: 'application/json',
-                            url: 'http://localhost:3000/',            
-                            success: function(data) {
-                                console.log('success');
-                                console.log(JSON.stringify(data));
-                    }
-                });
+            //     var data = {};
+            //     data.name = nameTrial;
+            //     data.GSIlog = args;
+                
+            //     $.ajax({
+            //         type: 'POST',
+            //         data: JSON.stringify(data),
+            //         contentType: 'application/json',
+            //                 url: 'http://localhost:3000/',            
+            //                 success: function(data) {
+            //                     console.log('success');
+            //                     console.log(JSON.stringify(data));
+            //         }
+            //     });
                         
-            }      
+            // }      
 
   </script>
 </html>

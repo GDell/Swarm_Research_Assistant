@@ -5,8 +5,12 @@ var app = express()
 var http = require("http");
 var config = require('config');
 var matter = 'matter.js'
+var csvWriter = require('csv-write-stream')
+var writer = csvWriter()
+'use strict';
+// const mongotocsv = require('mongo-to-csv');
 
-// Connecting to Database
+// Connecting to Databletase
 var mongoose = require('mongoose');
 var mongoDB = 'mongodb://localhost:27017';
 var MongoClient = require('mongodb').MongoClient;
@@ -27,7 +31,6 @@ var trialSchema = new Schema(
 );
 
 
-
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
@@ -44,27 +47,20 @@ app.use("/", express.static(__dirname + '/public'));
 
 app
 	.get('/', function (request, response) {
-	  	var htmlRes =  reynoldsSimHTML;
-
-	  	
-
+	  var htmlRes =  reynoldsSimHTML;
 		response.writeHead(200, {'Content-Type': 'text/html'});
-
 		response.write(htmlRes)
-
 		response.end();
 	})
 	.post('/', function (request,response) {
 
 		var tempTrial = mongoose.model('trial', trialSchema);
-		
-
 		var dataTemp = "";
 		var finalObj;
-		request.on('data', function (chunk) {
-			
-			dataTemp = dataTemp + chunk
 
+		request.on('data', function (chunk) {
+
+			dataTemp = dataTemp + chunk
 			finalObj = JSON.parse(dataTemp)
 
 			var t = new tempTrial({
@@ -81,24 +77,50 @@ app
 				}
 			});
 
-			MongoClient.connect(mongoDB, function(err, db) {
+			queryMongoDB("exampleTrial")
+			// mongoDBtoCSV("exampleTrial")
+			// console.log(t)
+      // console.log('GOT DATA!');
+    	});
+
+	} )
+
+
+	// MONGO DB functions
+	function queryMongoDB(trialSearch) {
+		var tempArr;
+		MongoClient.connect(mongoDB, function(err, db) {
 			  if (err) throw err;
 			  var dbo = db.db();
-			 	var query = {trialName:"trial1"};
+
+			 var query = {trialName:trialSearch};
 			  dbo.collection("trials").find(query).toArray(function(err, result) {
 			    if (err) throw err;
-			    console.log(result);
+			    // console.log(result);
+
+			   	// Get the first GSI log in the DB with the trial name passed to this function (tiralSearch)  
+		   		var GSIarr = result[0].gsiLog
+		   		// Write the Data to a CSV 
+		   		writeToCSV(GSIarr, "testFunc1.csv")
+		
 			    db.close();
 			  });
 			});
-			// console.log(t)
-        	console.log('GOT DATA!');
-    	});
+		
+	}
 
-		// console.log()
-	} )
 
-	
+	// Function to write the contents of an array to a CSV
+	function writeToCSV(arrayContent, nameOfCSV) {
+		var writer = csvWriter()
+		writer.pipe(fs.createWriteStream(nameOfCSV))
+		var tempArr = arrayContent.split(',')
+	   	tempArr.forEach(function(element) {		  	
+			writer.write({GSI: element})
+		});
+   		writer.end()
+	}
+
 	// .get('/asocial', function (request, response) {
 	//   	var htmlRes =  reynoldsSimHTML;
 
@@ -118,25 +140,6 @@ app
 	// 	response.end();
 	// })
 // // var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });\
-// //Create HTTP server and listen on port 8000 for requests
-// http.createServer(function() {
-
-// 	// Loads the GSI log 
-// 	// var currentResult = reynolds.experimentResult
-
-// 	// var N = 10
-
-// 	// // List of all swarm configurations from step 0-nSteps
-// 	// var arenas = currentResult[1]
-// 	// // Swarm configuration at round 0
-// 	// var firstRound = arenas[0]
-
-// 	// The html response to the server request
-
-
-// // Designates the port as 3000
-// }).listen(3000); 
-
 
 
 
@@ -148,18 +151,4 @@ var server = app.listen(port, function () {
   var port = server.address().port;
   console.log("Server running: http://",host,port)
 })
-
-// app.listen(3000, 'localhost', function () {
-//   console.log('Example app listening on port 3000!')
-// }) 
-
-
-
-// options: {\
-// 							        width: 1500,\
-// 							        height: 700,\
-// 							        showPosition: true\
-// 							    }\
-// console.log('server running at 127.0.0.1:3000')
-
 
