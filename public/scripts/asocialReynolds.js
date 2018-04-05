@@ -87,14 +87,18 @@ var pauseState = true;
 
 function setup() {
 
+  
   var averageLocation = createVector(centerStart,centerStart);
 
   createCanvas(canvasWidth, canvasHeight)
-  
+
+  // Intialize the simulation
+  initialize()
+
   // engine = Engine.create();
   // engine.world.gravity.y = 0;
   // world = engine.world;
-  initialize()
+  
   // Engine.run(engine);
 }
 
@@ -186,7 +190,6 @@ function draw() {
         }
         flock.display();
       }
-
 
       function Flock() {
         this.boids = [];
@@ -551,4 +554,4 @@ function draw() {
                     }
                 });
                         
-            }      
+      }      

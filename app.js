@@ -77,11 +77,14 @@ app
 				}
 			});
 
-			queryMongoDB("exampleTrial")
+			// queryMongoDB("exampleTrial")
 			// mongoDBtoCSV("exampleTrial")
 			// console.log(t)
       // console.log('GOT DATA!');
     	});
+
+
+    	queryMongoDB("exampleTrial")
 
 	} )
 
@@ -96,16 +99,17 @@ app
 			 var query = {trialName:trialSearch};
 			  dbo.collection("trials").find(query).toArray(function(err, result) {
 			    if (err) throw err;
-			    // console.log(result);
-
 			   	// Get the first GSI log in the DB with the trial name passed to this function (tiralSearch)  
 		   		var GSIarr = result[0].gsiLog
 		   		// Write the Data to a CSV 
-		   		writeToCSV(GSIarr, "testFunc1.csv")
+		   		writeToCSV(GSIarr, trialSearch+".csv")
 		
 			    db.close();
 			  });
-			});
+		});
+
+
+
 		
 	}
 
