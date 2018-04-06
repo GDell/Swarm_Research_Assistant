@@ -26,7 +26,12 @@ var Schema = mongoose.Schema;
 var trialSchema = new Schema(
 {
 	trialName: {type: String, required: true, max:100},
-	gsiLog: {type:String, required:true, max:5000}
+	gsiLog: {type:String, required:true, max:5000},
+	light: {type:String,  max:5000} ,
+    alignment:  {type:String,  max:5000} ,
+    attraction:  {type:String,  max:5000},
+    avoidance: {type:String,  max:5000},
+    collision: {type:String,  max:5000}
 }
 );
 
@@ -76,7 +81,12 @@ app
 
 			var t = new tempTrial({
 				trialName: finalObj.name,
-				gsiLog: finalObj.GSIlog
+				gsiLog: finalObj.GSIlog,
+				light: finalObj.lightLog,
+		        alignment:  finalObj.alignLog,
+		        attraction:  finalObj.attractionLog,
+		        avoidance:  finalObj.avoidanceLog,
+		        collision:  finalObj.collisionLog
 			});
 
 			// Keeps track of the most recent trial data
@@ -120,13 +130,26 @@ app
 			  if (err) throw err;
 			  var dbo = db.db();
 
-			 var query = {trialName:trialSearch};
+			  var query = {trialName:trialSearch};
 			  dbo.collection("trials").find(query).toArray(function(err, result) {
 			    if (err) throw err;
+
+			    // console.log(result[0].alignment)
 			   	// Get the first GSI log in the DB with the trial name passed to this function (tiralSearch)  
-		   		var GSIarr = result[0].gsiLog
+		   		var GSIarr = result[0].gsiLog + '\n'
+		   		var lightarr =  result[0].light + '\n'
+		        var alignmentarr =  result[0].alignment + '\n'
+		        var attractionarr = result[0].attraction + '\n'
+		        var avoidancearr = result[0].avoidance + '\n'
+		        var collisionarr = result[0].collision + '\n'
 		   		// Write the Data to a CSV 
-		   		writeToCSV(GSIarr, trialSearch+".csv")
+
+		   		GSIarr
+
+		   		writeToCSV(GSIarr, lightarr, alignmentarr, attractionarr, avoidancearr,  collisionarr, trialSearch+".csv")
+		   	
+		   		// writeToCSV(avoidancearr, trialSearch+".csv")
+		  
 		
 			    db.close();
 			  });
@@ -135,14 +158,44 @@ app
 
 
 	// Function to write the contents of an array to a CSV
-	function writeToCSV(arrayContent, nameOfCSV) {
-		var writer = csvWriter()
+	function writeToCSV(gsiC, lightC, alignmentC, attractionC, avoidnaceC, collisionC, nameOfCSV) {
+		var writer = csvWriter( {
+			headers: ["GSI","ALIGN", "ATTRACT", "AVOID", "COLLISION"]
+		})
+
 		writer.pipe(fs.createWriteStream("./public/GSIdata/"+nameOfCSV))
-		var tempArr = arrayContent.split(',')
-	   	tempArr.forEach(function(element) {		  	
-			writer.write({GSI: element})
-		});
-   		writer.end()
+
+		var behaveCollection = [gsiC, lightC, alignmentC, attractionC, avoidnaceC, collisionC]
+
+
+		var index = 0
+		
+		behaveCollection.forEach(function(element) {
+			behaveCollection[index] = element.split(',').join("\r\n")
+
+
+			index = index +1
+			
+		})
+
+		writer.write(behaveCollection)
+			// var tempI = 0;
+			// gsiC.forEach(function(element) {
+
+			// 	// var tempArr = this.split(',')
+			// 	// tempArr.forEach(function(element) {		  	
+			// 	writer.write(gsiC, lightC, alignmentC, attractionC, avoidnaceC, collisionC])
+			// 	// });
+			// 	tempI = tempI + 1;
+			// })
+			
+
+		   
+
+
+		   	writer.end()
+		
+		
 	}
 
 

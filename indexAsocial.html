@@ -1,14 +1,15 @@
   <head> 
     <link rel="stylesheet" href="/styles/asocialStyling.css">
+    <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
   <meta charset>
 
-    <h1 style=" margin-left: 40%;">Reynolds BOID model</h1> 
+    <h1 style=" margin-left: 40%;"><b>Flocking Model </b></h1> 
   </head> 
 
   <body>
     
    <div id="GSIdisplay">
-      <h2 style="float: right; margin-right: 20%">Group stability Index</h2>
+      <h2 style="float: right; margin-right: 16%">Group stability Index</h2>
       <div id="myDiv" style="float: right; clear: both"><!-- Plotly chart will be drawn inside this DIV --></div>
    </div>  
 
@@ -26,7 +27,7 @@
         <button id="pauseButton">
           &#9658
         </button>
-        <button class="behaviorCheckBox" id="downloadGSI" onclick="downloadCSV(gsiLog)">Store GSI</button>
+        <button class="behaviorCheckBox" id="downloadGSI" onclick="downloadCSV(gsiLog,lightLog,alignmentLog,attractionLog,avoidanceLog,collisionLog)">Store GSI</button>
         <button class="hide" id="downloadButton"><a id="linkD"></a></button>
         <button id="resetButton">
           Reset Swarm
@@ -92,26 +93,5 @@
   <script src="/p5/p5.js"></script>
   <script src="/scripts/asocialReynolds.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
-  <script type="text/javascript">
-            // function downloadCSV(args) { 
 
-
-            //     var data = {};
-            //     data.name = nameTrial;
-            //     data.GSIlog = args;
-                
-            //     $.ajax({
-            //         type: 'POST',
-            //         data: JSON.stringify(data),
-            //         contentType: 'application/json',
-            //                 url: 'http://localhost:3000/',            
-            //                 success: function(data) {
-            //                     console.log('success');
-            //                     console.log(JSON.stringify(data));
-            //         }
-            //     });
-                        
-            // }      
-
-  </script>
 </html>

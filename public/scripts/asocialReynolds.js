@@ -80,7 +80,19 @@ var simAttraction;
 var alignentSim;
 
 var flock; 
-var gsiLog = []
+var gsiLog = [];
+var lightLog = [];
+var alignmentLog  = [];
+var attractionLog = [];
+var avoidanceLog = [];
+var collisionLog = [];
+
+
+var simLight;
+var alignmentSim;
+var simAttraction;
+var simAvoidance;
+var simCollision;
 
 var pauseState = true;
 
@@ -140,6 +152,22 @@ function draw() {
     post = calculateGroupDist(flock)
     currentGSI = calculateGSI(prior,post)
     gsiLog.push(currentGSI)
+    if(simLight) {
+      lightLog.push(lightSetting);
+    }
+    if(simAttraction) {
+      attractionLog.push(attractSetting);
+    }
+    if(simAvoidance) {
+      avoidanceLog.push(avoidSetting);
+    }
+    if(alignmentSim) {
+      alignmentLog.push(alignSetting);
+    }
+    if(simCollision) {
+      collisionLog.push(collisionSetting);
+    }
+    
   }
  
   flock.display();
@@ -179,6 +207,11 @@ function draw() {
         }
 
         gsiLog = [];
+        lightLog = [];
+        alignmentLog  = [];
+        attractionLog = [];
+        avoidanceLog = [];
+        collisionLog = []
       }
 
 
@@ -259,11 +292,11 @@ function draw() {
         var attraction = this.cohesion(boids)
         var avoidance = this. avoidance(boids, avoidanceDistance)
 
-        var simLight = document.getElementById('lightCheckBox').checked;
-        var alignmentSim = document.getElementById('alignCheckBox').checked;
-        var simAttraction = document.getElementById('attractionCheckBox').checked;
-        var simAvoidance = document.getElementById('avoidanceCheckBox').checked;
-        var simCollision = document.getElementById('collisionCheckBox').checked;
+        simLight = document.getElementById('lightCheckBox').checked;
+        alignmentSim = document.getElementById('alignCheckBox').checked;
+        simAttraction = document.getElementById('attractionCheckBox').checked;
+        simAvoidance = document.getElementById('avoidanceCheckBox').checked;
+        simCollision = document.getElementById('collisionCheckBox').checked;
       
         // Weight of the attraction force
         lightAttraction.mult(lightSetting)
@@ -513,6 +546,9 @@ function draw() {
         
           }
         }
+
+
+        console.log("AVOID log: "+avoidanceLog)
         
         
         var trace1 = {
@@ -538,13 +574,22 @@ function draw() {
 
       }
 
-      function downloadCSV(args) { 
+      function downloadCSV(args, light, alignz, attract, avoid, collide) { 
                 var nameTrial = prompt("Please enter the number of individuals to be included in the swarm: ", "exampleTrial")
+
+                // console.log(args +" "+ light+" "+align+" "+attract+" "+avoid+" "+collide)
+
+                // console.log("CURRENT ALIGN:" + alignz)
 
                 if (nameTrial != null) {
                   var data = {};
                   data.name = nameTrial;
                   data.GSIlog = args;  
+                  data.lightLog = light;
+                  data.alignLog  = alignz;
+                  data.attractionLog = attract;
+                  data.avoidanceLog = avoid;
+                  data.collisionLog = collide
                    // Send a trial Data that will create a DB entry and creat a csv of the most recent trial
                   $.ajax({
                       type: 'POST',
