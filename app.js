@@ -43,6 +43,8 @@ var reynoldsSimHTML = fs.readFileSync('./indexAsocial.html');
 var reynoldsMatterPhysHTML = fs.readFileSync('./indexPhysics.html');
 
 
+var recentTrial = "";
+
 app.use("/", express.static(__dirname + '/public'));
 
 app
@@ -51,6 +53,14 @@ app
 		response.writeHead(200, {'Content-Type': 'text/html'});
 		response.write(htmlRes)
 		response.end();
+	})
+	.get('/downloadGSI', function (request, response) {
+
+		var str = './public/GSIdata/' + recentTrial +'.csv'
+	  	var file = str
+         // var file = fs.readFileSync('./public/GSIdata/exampleTrial.csv')
+         response.download(file, recentTrial + '.csv');
+         // response.end();
 	})
 	.post('/', function (request,response) {
 
@@ -63,11 +73,14 @@ app
 			dataTemp = dataTemp + chunk
 			finalObj = JSON.parse(dataTemp)
 
+
 			var t = new tempTrial({
 				trialName: finalObj.name,
 				gsiLog: finalObj.GSIlog
 			});
 
+			// Keeps track of the most recent trial data
+			recentTrial = ""+finalObj.name +""
 
 			t.save(function(err){
 				if(err) {
@@ -77,20 +90,31 @@ app
 				}
 			});
 
-			// queryMongoDB("exampleTrial")
+			// console.log(recentTrial)
+
+
+			csvFromMongoDB(recentTrial)
 			// mongoDBtoCSV("exampleTrial")
 			// console.log(t)
-      // console.log('GOT DATA!');
+   
     	});
 
 
-    	queryMongoDB("exampleTrial")
+    	// csvFromMongoDB(recentTrial)
+    	
+    	// var file = '/public/GSIdata/exampleTrial.csv'
+
+    	// var file = './public/GSIdata/exampleTrial.csv'
+         // var file = fs.readFileSync('./public/GSIdata/exampleTrial.csv')
+         // response.download(file, 'exampleTrial.csv');
+         // var file = fs.readFileSync('./public/GSIdata/exampleTrial.csv')
+         // response.download(file, 'exampleTrial.csv');
+         // response.end();
 
 	} )
 
-
 	// MONGO DB functions
-	function queryMongoDB(trialSearch) {
+	function csvFromMongoDB(trialSearch) {
 		var tempArr;
 		MongoClient.connect(mongoDB, function(err, db) {
 			  if (err) throw err;
@@ -107,23 +131,21 @@ app
 			    db.close();
 			  });
 		});
-
-
-
-		
 	}
 
 
 	// Function to write the contents of an array to a CSV
 	function writeToCSV(arrayContent, nameOfCSV) {
 		var writer = csvWriter()
-		writer.pipe(fs.createWriteStream(nameOfCSV))
+		writer.pipe(fs.createWriteStream("./public/GSIdata/"+nameOfCSV))
 		var tempArr = arrayContent.split(',')
 	   	tempArr.forEach(function(element) {		  	
 			writer.write({GSI: element})
 		});
    		writer.end()
 	}
+
+
 
 	// .get('/asocial', function (request, response) {
 	//   	var htmlRes =  reynoldsSimHTML;

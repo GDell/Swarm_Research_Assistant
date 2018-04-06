@@ -87,7 +87,7 @@ var pauseState = true;
 
 function setup() {
 
-  
+
   var averageLocation = createVector(centerStart,centerStart);
 
   createCanvas(canvasWidth, canvasHeight)
@@ -189,6 +189,8 @@ function draw() {
           document.getElementById("pauseButton").click()
         }
         flock.display();
+        var buttonElement = document.getElementById("downloadButton");
+        buttonElement.classList.add("hide");
       }
 
       function Flock() {
@@ -537,21 +539,34 @@ function draw() {
       }
 
       function downloadCSV(args) { 
-
                 var nameTrial = prompt("Please enter the number of individuals to be included in the swarm: ", "exampleTrial")
-                var data = {};
-                data.name = nameTrial;
-                data.GSIlog = args;
+
+                if (nameTrial != null) {
+                  var data = {};
+                  data.name = nameTrial;
+                  data.GSIlog = args;  
+                   // Send a trial Data that will create a DB entry and creat a csv of the most recent trial
+                  $.ajax({
+                      type: 'POST',
+                      data: JSON.stringify(data),
+                      contentType: 'application/json',
+                      url: 'http://localhost:3000/',            
+                      success: function(data) {
+                                  console.log('success');
+                                  console.log(JSON.stringify(data));
+                      }
+                  });
+                  // Create a download link for the csv for this trial
+                  createDownloadLink(nameTrial)
+                }
                 
-                $.ajax({
-                    type: 'POST',
-                    data: JSON.stringify(data),
-                    contentType: 'application/json',
-                            url: 'http://localhost:3000/',            
-                            success: function(data) {
-                                console.log('success');
-                                console.log(JSON.stringify(data));
-                    }
-                });
-                        
       }      
+
+      function createDownloadLink(nameLink) {
+        var buttonElement = document.getElementById("downloadButton");
+        var linkDownload = document.getElementById("linkD");
+        buttonElement.classList.remove("hide");
+        // var GSIlink = document.getElementById("GSIdownloadLink");
+        linkDownload.innerHTML = nameLink+".csv"; 
+        linkDownload.href = "http://localhost:3000/downloadGSI"
+      } 
