@@ -54,17 +54,14 @@ collisionSlider.oninput = function() {
   console.log("Collision strength"+collisionSetting)
 }
 
-
-
 // var engine;
 // var world;
 var box1;
 
-
 // Starting Variables
 var nIndividuals = 50;
 var baseVelocity = 1;
-var spatialDistribution = 100;
+var spatialDistribution = 175;
 // Starting average location for the swarm.
 var bodySize = 8;
 
@@ -86,6 +83,7 @@ var alignmentLog  = [];
 var attractionLog = [];
 var avoidanceLog = [];
 var collisionLog = [];
+var currentPositionLog = []
 
 
 var simLight;
@@ -115,6 +113,9 @@ function setup() {
 }
 
 function draw() {
+
+
+
 
   document.getElementById("lightDisplayVal").innerHTML = lightSetting;
   document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
@@ -147,11 +148,15 @@ function draw() {
     // ctx.save();
     // ctx.translate(averageLocation[0], averageLocation[1]);
     // ctx.restore();
+
+    // currentPositionLog = flock.locationArray();
+
     flock.step();
     flock.display();
     post = calculateGroupDist(flock)
     currentGSI = calculateGSI(prior,post)
     gsiLog.push(currentGSI)
+    // positionLog.push(currentPositionLog);
     if(simLight) {
       lightLog.push(lightSetting);
     }
@@ -168,10 +173,13 @@ function draw() {
       collisionLog.push(collisionSetting);
     }
     
+
   }
  
-  flock.display();
+  flock.display();  
+  // console.log(flock.locationArray())
   displayGSIlog(gsiLog)
+  currentPositionLog = [];
 }
 
 
@@ -211,7 +219,9 @@ function draw() {
         alignmentLog  = [];
         attractionLog = [];
         avoidanceLog = [];
-        collisionLog = []
+        collisionLog = [];
+        positionLog = [];
+        currentPositionLog = [];
       }
 
 
@@ -233,6 +243,7 @@ function draw() {
       Flock.prototype.display = function() {
         for(var i =0; i < this.boids.length; i++) {
           this.boids[i].rend(this.boids)
+
         }
       }
 
@@ -246,6 +257,17 @@ function draw() {
       Flock.prototype.addBoid = function(b) {
         this.boids.push(b)
       }
+
+      Flock.prototype.locationArray = function() {
+          tempArray = [];
+          this.boids.forEach(function(element) {
+            var currentPos = [element.position.x, element.position.y];
+            tempArray.push(currentPos);
+          })
+
+          return(tempArray)
+      }
+
       // Object that represents a boid.
       function Boid(count, locx, locy, xvel, yvel, aVal) {
         this.acceleration = createVector(0,0);
@@ -409,7 +431,7 @@ function draw() {
 
 
       Boid.prototype.align = function(boids) {
-        var neighbordist = 50;
+        var neighbordist = 600;
         var sum = createVector(0,0);
         var count = 0;
         for (var i = 0; i < boids.length; i++) {
@@ -443,7 +465,7 @@ function draw() {
       }
 
       Boid.prototype.cohesion = function(boids) {
-        var neighbordist = 50;
+        var neighbordist = 600;
         var sum = createVector(0,0);   // Start with empty vector to accumulate all locations
         var count = 0;
         for (var i = 0; i < boids.length; i++) {
@@ -476,6 +498,9 @@ function draw() {
         vertex(this.r, this.r*1);
         endShape(CLOSE);
         pop();
+
+
+
       }
 
       // Wrap around borders
@@ -548,7 +573,7 @@ function draw() {
         }
 
 
-        console.log("AVOID log: "+avoidanceLog)
+        // console.log("AVOID log: "+avoidanceLog)
         
         
         var trace1 = {
@@ -579,7 +604,6 @@ function draw() {
 
                 // console.log(args +" "+ light+" "+align+" "+attract+" "+avoid+" "+collide)
 
-                // console.log("CURRENT ALIGN:" + alignz)
 
                 if (nameTrial != null) {
                   var data = {};
@@ -589,7 +613,8 @@ function draw() {
                   data.alignLog  = alignz;
                   data.attractionLog = attract;
                   data.avoidanceLog = avoid;
-                  data.collisionLog = collide
+                  data.collisionLog = collide;
+                
                    // Send a trial Data that will create a DB entry and creat a csv of the most recent trial
                   $.ajax({
                       type: 'POST',
@@ -598,7 +623,7 @@ function draw() {
                       url: 'http://localhost:3000/',            
                       success: function(data) {
                                   console.log('success');
-                                  console.log(JSON.stringify(data));
+                                  // console.log(JSON.stringify(data));
                       }
                   });
                   // Create a download link for the csv for this trial

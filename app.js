@@ -86,7 +86,8 @@ app
 		        alignment:  finalObj.alignLog,
 		        attraction:  finalObj.attractionLog,
 		        avoidance:  finalObj.avoidanceLog,
-		        collision:  finalObj.collisionLog
+		        collision:  finalObj.collisionLog,
+		        
 			});
 
 			// Keeps track of the most recent trial data
@@ -142,9 +143,10 @@ app
 		        var attractionarr = result[0].attraction + '\n'
 		        var avoidancearr = result[0].avoidance + '\n'
 		        var collisionarr = result[0].collision + '\n'
+		        // var postionArr = result[0].position + '\n'
 		   		// Write the Data to a CSV 
 
-		   		GSIarr
+		   		
 
 		   		writeToCSV(GSIarr, lightarr, alignmentarr, attractionarr, avoidancearr,  collisionarr, trialSearch+".csv")
 		   	
@@ -171,8 +173,7 @@ app
 		var index = 0
 		
 		behaveCollection.forEach(function(element) {
-			behaveCollection[index] = element.split(',').join("\r\n")
-
+			behaveCollection[index] = element.split(',').join("\n")
 
 			index = index +1
 			
@@ -190,8 +191,7 @@ app
 			// })
 			
 
-		   
-
+		  
 
 		   	writer.end()
 		
