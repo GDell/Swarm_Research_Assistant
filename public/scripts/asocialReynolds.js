@@ -70,6 +70,9 @@ var canvasHeight = 700;
 var centerStart = canvasHeight/2;
 
 
+var backgroundColor = "#414f59"
+var boidColor = "#99c2ff"
+
 var avoidanceDistance = 50;
 
 var simLight;
@@ -140,7 +143,23 @@ function draw() {
       }
   }
 
-  background(51);
+  //51 
+  background(backgroundColor);
+
+
+  if (gsiLog.length > 800) {
+    pauseState = true;
+    if (pauseState == true) {
+        //Play Button
+        document.getElementById("pauseButton").innerHTML = "&#9658"
+      } else if (pauseState == false) {
+        //Pause Button
+        document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
+    }
+  }
+
+
+  
 
   if (!pauseState) {
     prior = calculateGroupDist(flock);
@@ -487,7 +506,8 @@ function draw() {
       Boid.prototype.render = function() {
         // Find the boid's heading
         var theta = this.velocity.heading() + radians(90)
-        fill(127)
+        // 127
+        fill(400)
         stroke(200)
         push()
         translate(this.position.x, this.position.y);
