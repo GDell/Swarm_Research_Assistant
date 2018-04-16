@@ -146,16 +146,17 @@ function draw() {
   background(backgroundColor);
 
 
-  if (gsiLog.length > 800) {
-    pauseState = true;
-    if (pauseState == true) {
-        //Play Button
-        document.getElementById("pauseButton").innerHTML = "&#9658"
-      } else if (pauseState == false) {
-        //Pause Button
-        document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
-    }
-  }
+  // Un-comment in order to run only 800 time-steps per trial.
+  // if (gsiLog.length > 800) {
+  //   pauseState = true;
+  //   if (pauseState == true) {
+  //       //Play Button
+  //       document.getElementById("pauseButton").innerHTML = "&#9658"
+  //     } else if (pauseState == false) {
+  //       //Pause Button
+  //       document.getElementById("pauseButton").innerHTML = "&#9612&#9612"
+  //   }
+  // }
 
 
   
