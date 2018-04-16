@@ -2,37 +2,31 @@
 // // # Written by Gabriel Dell'Accio
 // // # Algorithm inspired by Craig Reynold's BOID algorithm and Conrad Parker's BOIDs pseudocode at: 
 // // # http://www.kfish.org/boids/pseudocode.html
-
-// // # Overview:
-// // #
-// // #   Rules for swarming
-// // #     1) Center of Mass: Boids are attracted to the center of the overall swarm.
-// // #     2) Avoidance rule: Boids avoid collision with other boids by avoiding coming within
-// // #        a certain distance of one another.
-// // #     3) Match Velocity: Boids can sense the average velocity of the swarm and do their 
-// // #        best to match it.
 // // # 
+// // # Features a group cohesion measure developed by Baldessare and colleagues (2003) "Evolving mobile robots  able to display collective behaviors":
 // // #    GSI: Group Stability Index 
-// // #     # This is an index developed by Baldessare and colleagues (2003) to measure the stability of a 
-// // #     # swarm in their paper "Evolving mobile robots  able to display collective behaviors"
+// // #     # This is an index to measure the stability of a 
+// // #     # s
 // var Engine = Matter.Engine;
 // var World = Matter.World;
 // var Bodies = Matter.Bodies;
 // var Body = Matter.Body
 
-
+// saves the sliding bar objects as variables.
 var lightSlider = document.getElementById("lightRange");
 var alignSlider = document.getElementById("alignmentRange");
 var avoidSlider = document.getElementById("avoidanceRange");
 var attractSlider = document.getElementById("attractionRange")
 var collisionSlider = document.getElementById("collisionRange");
+
+// Sets the initial values of the behavior slide bars
 var lightSetting = 50/100;
 var alignSetting = 50/100;
 var avoidSetting = 50/100;
 var attractSetting = 50/100;
 var collisionSetting = 50/10;
 
-
+// Changes the strength value of a behavior when a slide bar is interacted with.
 lightSlider.oninput = function() {
   lightSetting = this.value/100;
   console.log("Light attraction strength"+lightSetting);
@@ -54,9 +48,6 @@ collisionSlider.oninput = function() {
   console.log("Collision strength"+collisionSetting)
 }
 
-// var engine;
-// var world;
-var box1;
 
 // Starting Variables
 var nIndividuals = 50;
@@ -65,21 +56,23 @@ var spatialDistribution = 175;
 // Starting average location for the swarm.
 var bodySize = 8;
 
+// Size of the arena
 var canvasWidth = 700;
 var canvasHeight = 700;
+// Cluster center for starting swarm location.
 var centerStart = canvasHeight/2;
 
-
+// Colors for the HTML canvas display
 var backgroundColor = "#414f59"
 var boidColor = "#99c2ff"
 
+
+// The distance at which boids will begin attempting to avoid one another.
 var avoidanceDistance = 50;
 
-var simLight;
-var simAttraction;
-var alignentSim;
 
 var flock; 
+// Logs for keeping track of GSI history and behavior strength history over the course of the simulation.
 var gsiLog = [];
 var lightLog = [];
 var alignmentLog  = [];
@@ -89,12 +82,18 @@ var collisionLog = [];
 var currentPositionLog = []
 
 
+// Boolean variables to keep track of what behaviors are to be
+// implemented each step of the simulation. Turned on/off by check boxrs.
+var simLight;
+var simAttraction;
+var alignentSim
 var simLight;
 var alignmentSim;
 var simAttraction;
 var simAvoidance;
 var simCollision;
 
+// boolean state variable to keep track of whether or not the simulation is currently paused.
 var pauseState = true;
 
 
