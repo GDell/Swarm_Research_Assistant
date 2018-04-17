@@ -1,18 +1,14 @@
 // // # THE FOLLOWING IS A 2-D VARIANT OF CRAIG REYNOLDS' BOID MODEL.
 // // # Written by Gabriel Dell'Accio
-// // # Algorithm inspired by Craig Reynold's BOID algorithm and Conrad Parker's BOIDs pseudocode at: 
-// // # http://www.kfish.org/boids/pseudocode.html
+// // # Algorithm inspired by Conrad Parker's BOIDs pseudocode 
+// // # and the P5.js flocking simulation example: 
+// // # -- http://www.kfish.org/boids/pseudocode.html
+// // # -- https://p5js.org/examples/simulate-flocking.html
 // // # 
-// // # Features a group cohesion measure developed by Baldessare and colleagues (2003) "Evolving mobile robots  able to display collective behaviors":
-// // #    GSI: Group Stability Index 
-// // #     # This is an index to measure the stability of a 
-// // #     # s
-// var Engine = Matter.Engine;
-// var World = Matter.World;
-// var Bodies = Matter.Bodies;
-// var Body = Matter.Body
+// // #
 
-// saves the sliding bar objects as variables.
+
+// Saves the sliding bar objects in the indexOriginal page as variables.
 var lightSlider = document.getElementById("lightRange");
 var alignSlider = document.getElementById("alignmentRange");
 var avoidSlider = document.getElementById("avoidanceRange");
@@ -70,8 +66,9 @@ var boidColor = "#99c2ff"
 // The distance at which boids will begin attempting to avoid one another.
 var avoidanceDistance = 50;
 
-
+// Global variable to hold the current experiment's flock.
 var flock; 
+
 // Logs for keeping track of GSI history and behavior strength history over the course of the simulation.
 var gsiLog = [];
 var lightLog = [];
@@ -80,7 +77,6 @@ var attractionLog = [];
 var avoidanceLog = [];
 var collisionLog = [];
 var currentPositionLog = []
-
 
 // Boolean variables to keep track of what behaviors are to be
 // implemented each step of the simulation. Turned on/off by check boxrs.
@@ -96,41 +92,38 @@ var simCollision;
 // boolean state variable to keep track of whether or not the simulation is currently paused.
 var pauseState = true;
 
-
+// Setup function runs once when the page is first loaded. 
 function setup() {
 
-
-  var averageLocation = createVector(centerStart,centerStart);
-
+  // Create a canvas in the canvas HTML div to display the swarm.
   createCanvas(canvasWidth, canvasHeight)
 
   // Intialize the simulation
   initialize()
 
-  // engine = Engine.create();
-  // engine.world.gravity.y = 0;
-  // world = engine.world;
-  
-  // Engine.run(engine);
 }
 
+// A looping function that is constantly running after the setup function is finished running.
 function draw() {
 
-
-
-
+  // Display the behavior strengths in HTML 
   document.getElementById("lightDisplayVal").innerHTML = lightSetting;
   document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
   document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
   document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
   document.getElementById("collisionDisplayVal").innerHTML = collisionSlider.value/100;
 
+  // Call the reset function if the reset button is pressed.
   document.getElementById("resetButton").onclick = function() {
       reset();
   }
 
+
   var buttonText = document.getElementById("pauseButton").innerHTML;
 
+  //  Changes the pause button to the play button and 
+  // vice versa if the button is pressed. Does the same for pausing/
+  // unpausing the simulation.
   document.getElementById("pauseButton").onclick = function() {
       pauseState = !pauseState;
       if (pauseState == true) {
@@ -142,7 +135,7 @@ function draw() {
       }
   }
 
-  //51 
+  // Set the background color of the canvas.
   background(backgroundColor);
 
 
@@ -159,23 +152,30 @@ function draw() {
   // }
 
 
-  
 
   if (!pauseState) {
+
+    // Calculates the total distance between individuals in a flock.
     prior = calculateGroupDist(flock);
-    // var ctx = document.getElementById('defaultCanvas0').getContext('2d');
-    // ctx.save();
-    // ctx.translate(averageLocation[0], averageLocation[1]);
-    // ctx.restore();
 
-    // currentPositionLog = flock.locationArray();
-
+    // Step the flock
     flock.step();
+
+    // Display the newly stepped flock
     flock.display();
+
+    // Calculate the total distance between individauls in the flock
     post = calculateGroupDist(flock)
+
+    // Calculate the GSI for the current time-step using the prior and post group distances.
     currentGSI = calculateGSI(prior,post)
+
+    // Push the GSI to the GSI log or the current experiment.
     gsiLog.push(currentGSI)
-    // positionLog.push(currentPositionLog);
+    
+
+    // If any of the behavior primitives were applied in this time-step, push the 
+    // current strength of that behavior to a log.
     if(simLight) {
       lightLog.push(lightSetting);
     }
@@ -191,18 +191,22 @@ function draw() {
     if(simCollision) {
       collisionLog.push(collisionSetting);
     }
-    
-
   }
  
+  // Display the current flock. 
   flock.display();  
-  // console.log(flock.locationArray())
+  // Display the current experiment's GSI log.
   displayGSIlog(gsiLog)
+
+  // Rest the log to store the current position of the swarm.
   currentPositionLog = [];
 }
 
-
+      // function to initiaize the swarm, randomly distributed around the center of the 
+      // canvas view.
       function initialize() {
+        // Function to retrun a value from a normal distribution around
+        // a mean and with a given standard deviation.
         Math.randomGaussian = function(mean, standardDeviation) {
            if (Math.randomGaussian.nextGaussian !== undefined) {
                var nextGaussian = Math.randomGaussian.nextGaussian;
@@ -221,7 +225,9 @@ function draw() {
            }
         };
 
+        // Set the number of individuals in the swarm from user input.
         nIndividuals = prompt("Please enter the number of individuals to be included in the swarm: ", 25)
+        // Create a new structure to hold this flock. 
         flock = new Flock()
         // Generate the starting swarm.
         for(var o = 0; o <nIndividuals; o++) {
@@ -233,6 +239,7 @@ function draw() {
           flock.addBoid(newBoid);
         }
 
+        // Reset all of the logs
         gsiLog = [];
         lightLog = [];
         alignmentLog  = [];
@@ -246,19 +253,25 @@ function draw() {
 
       // This function resets the swarm and GSI log while pausing the simulation.
       function reset() {
+        // Initialize the swarm
         initialize();
+        // Force pause the simulation
         if (pauseState == false) {
           document.getElementById("pauseButton").click()
         }
+        // Display the newly initialized flock.
         flock.display();
+        // Hide the download link.
         var buttonElement = document.getElementById("downloadButton");
         buttonElement.classList.add("hide");
       }
 
+      // Create an empty array to hold all of the boids initialized in the swarm. 
       function Flock() {
         this.boids = [];
       }
 
+      // Dispay each boid by calling its rend() function
       Flock.prototype.display = function() {
         for(var i =0; i < this.boids.length; i++) {
           this.boids[i].rend(this.boids)
@@ -301,13 +314,14 @@ function draw() {
         // World.add(world, this.body);
       }
 
+      // A function to step and individual boid
       Boid.prototype.step = function(boids) {
         // Step each boid
         this.flock(boids)
         // Update the boid
         this.update();
 
-        // WRAP BORDER TURNED OFF
+        // Check to see if the wrap box is checked.
         var simWrap = document.getElementById('wrapCheckBox').checked;
         if(simWrap) {
           this.borders();
@@ -325,27 +339,31 @@ function draw() {
         this.acceleration.add(force)
       }
 
+      // Applys force from the currenlty activated behaviors to each individual in the swarm.
       Boid.prototype.flock = function(boids) {
         // Place the center of attraction (the light source) in the center of the arena.
         var lightAttraction = this.attraction(createVector(canvasWidth/2, canvasHeight/2))
+        // Apply the behaviors
         var collision = this.collide(boids);
         var alignment = this.align(boids);
         var attraction = this.cohesion(boids)
         var avoidance = this. avoidance(boids, avoidanceDistance)
 
+        // Check to see which behaviors are checked.
         simLight = document.getElementById('lightCheckBox').checked;
         alignmentSim = document.getElementById('alignCheckBox').checked;
         simAttraction = document.getElementById('attractionCheckBox').checked;
         simAvoidance = document.getElementById('avoidanceCheckBox').checked;
         simCollision = document.getElementById('collisionCheckBox').checked;
       
-        // Weight of the attraction force
+        // Weight of the attraction force by behavior strength
         lightAttraction.mult(lightSetting)
         collision.mult(collisionSetting)
         attraction.mult(attractSetting)
         avoidance.mult(avoidSetting)
         alignment.mult(alignSetting)
 
+        // If the behavior is activated, apply the force.
         if(simLight){
           this.applyForce(lightAttraction)
         } 
@@ -364,6 +382,7 @@ function draw() {
 
       }
 
+      // Update a boids velocity, position, and acceleration
       Boid.prototype.update = function() {
         this.velocity.add(this.acceleration)
         // this.velocity.limit(this.maxspeed);
@@ -371,6 +390,7 @@ function draw() {
         this.acceleration = createVector(0,0)
       }
 
+      // Attraction behavior primitive
       Boid.prototype.attraction  = function(target) {
         var desired = p5.Vector.sub(target, this.position)
         // Normalize desired and scale to maximum speed
@@ -382,6 +402,7 @@ function draw() {
         return steer;
       }
 
+      // Collision bejavior primitive.
       Boid.prototype.collide = function(boids) {
         var desiredseparation = 7;
         var steer = createVector(0,0);
@@ -419,12 +440,12 @@ function draw() {
         var desiredseparation = sep;
         var steer = createVector(0,0);
         var count = 0;
-        // For every boid in the system, check if it's too close
+        // For every agent in the population
         for (var i = 0; i < boids.length; i++) {
           var d = p5.Vector.dist(this.position,boids[i].position);
-          // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+          // If another boid is too close .....
           if ((d > 0) && (d < desiredseparation)) {
-            // Calculate vector pointing away from neighbor
+            // Calculate a vector pointing away 
             var diff = p5.Vector.sub(this.position,boids[i].position);
             diff.normalize();
             diff.div(d);        // Weight by distance
@@ -448,7 +469,7 @@ function draw() {
         return steer;
       }
 
-
+      // Align behavior primitive. Causes boids to align to boids closest to it within 600 arbitrary units (neighbordist)
       Boid.prototype.align = function(boids) {
         var neighbordist = 600;
         var sum = createVector(0,0);
@@ -472,6 +493,7 @@ function draw() {
         }
       }
 
+      //  A function that steers a boid in a particular direction or target.
       Boid.prototype.seek = function(target) {
         var desired = p5.Vector.sub(target,this.position);  // A vector pointing from the location to the target
         // Normalize desired and scale to maximum speed
@@ -483,6 +505,7 @@ function draw() {
         return steer;
       }
 
+      // Cohesion behavior primitive. Causes Boids to be attracted towards Boids closest to it within 600 arbitraty units.
       Boid.prototype.cohesion = function(boids) {
         var neighbordist = 600;
         var sum = createVector(0,0);   // Start with empty vector to accumulate all locations
@@ -502,11 +525,10 @@ function draw() {
         }
       }
 
-      // Render's the BOID swarm in the canvas
+      // Render's the BOID swarm on the canvas the canvas
       Boid.prototype.render = function() {
         // Find the boid's heading
         var theta = this.velocity.heading() + radians(90)
-        // 127
         fill(400)
         stroke(200)
         push()
@@ -518,12 +540,9 @@ function draw() {
         vertex(this.r, this.r*1);
         endShape(CLOSE);
         pop();
-
-
-
       }
 
-      // Wrap around borders
+      // This function causes Boids to wrap aroud the Canvas view.
       Boid.prototype.borders = function() {
         if (this.position.x < -this.r)  this.position.x = width +this.r;
         if (this.position.y < -this.r)  this.position.y = height+this.r;
@@ -531,11 +550,12 @@ function draw() {
         if (this.position.y > height+this.r) this.position.y = -this.r;
       }
 
-      // Helpper function for printing the location of a swarm.
+      // Helper function for printing the location of a swarm.
       function printBoidLocation(boid) {
         console.log("Boid loc: " +[boid.xPosition, boid.yPosition])
       }
 
+      // Computes the cartesian distance between two x,y coordinates
       function computeCartDist(x1,x2,y1,y2) {
         var a = x1 - x2 
         var b = y1 - y2 
@@ -543,39 +563,37 @@ function draw() {
         return c
       }
 
+      // Calculates the total distance between all members in the swarm.
       function calculateGroupDist(swarm) {
         var groupedDistance = 0;
-        var tempAvg = createVector(0,0);
 
         for(i=0; i<nIndividuals; i++) {
-
-          tempAvg = tempAvg.add(swarm.boids[i].position.x, swarm.boids[i].position.x);
-
           for(j=0;j<nIndividuals; j++) {
-
-
             var tempDist = computeCartDist(swarm.boids[i].position.x,swarm.boids[j].position.x,swarm.boids[i].position.y, swarm.boids[j].position.y);
-            // console.log(tempDist)
             groupedDistance = groupedDistance + tempDist;
           } 
         }
-        averageLocation = tempAvg;
-        // console.log("Grouped distance: "+groupedDistance)
+       
         return groupedDistance;
       }
 
+      // This function implements Baldassare et al.'s group stability index 
+      // which measures the stability of the swarm in relation to the change in distance between all members of the swarm
       function calculateGSI(groupedDistancePrev,groupedDistanceNext) {
         var finalGSI = 1 - (((Math.abs(groupedDistancePrev - groupedDistanceNext)) / 4 ) / (nIndividuals*(nIndividuals-1)/2))
         return finalGSI
       }
 
 
+      // This function plots the GSI log for the current trial to the right of the canvas view. 
       async function displayGSIlog(log) {
 
         var logLength = log.length;
 
         var xList = []
         var yList = []
+
+        // Logic that plots up to the last 100 trials in the current experiment.
         if (logLength>100) {
           for (var f = logLength - 100; f < logLength; f++) {
             if(f > (logLength - 100) ){
@@ -593,9 +611,7 @@ function draw() {
         }
 
 
-        // console.log("AVOID log: "+avoidanceLog)
-        
-        
+        // Specifies the GSI plot
         var trace1 = {
           x: xList,
           y: yList,
@@ -615,15 +631,16 @@ function draw() {
           }
         };        
 
+        // Creates the plot
         Plotly.newPlot('myDiv', data, layout);
 
       }
 
+      // Function that is called when the user pressed the "Store Data" button. This
+      // triggers a database insertion and creates a link to allow the use to download the current 
+      // trial's GSI log as a CSV.
       function downloadCSV(args, light, alignz, attract, avoid, collide) { 
                 var nameTrial = prompt("Please enter the number of individuals to be included in the swarm: ", "exampleTrial")
-
-                // console.log(args +" "+ light+" "+align+" "+attract+" "+avoid+" "+collide)
-
 
                 if (nameTrial != null) {
                   var data = {};
@@ -643,15 +660,18 @@ function draw() {
                       url: 'http://localhost:3000/',            
                       success: function(data) {
                                   console.log('success');
-                                  // console.log(JSON.stringify(data));
+                                  
                       }
                   });
+
                   // Create a download link for the csv for this trial
                   createDownloadLink(nameTrial)
                 }
                 
       }      
 
+        // Creates a link next to the reset swarm button that permits a user to
+        // download the current trial's GSI
       function createDownloadLink(nameLink) {
         var buttonElement = document.getElementById("downloadButton");
         var linkDownload = document.getElementById("linkD");

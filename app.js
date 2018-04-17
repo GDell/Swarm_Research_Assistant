@@ -1,4 +1,4 @@
-//Load modules
+// Load modules
 var fs = require("fs")
 var express = require('express')
 var app = express()
@@ -8,7 +8,6 @@ var matter = 'matter.js'
 var csvWriter = require('csv-write-stream')
 var writer = csvWriter()
 'use strict';
-// const mongotocsv = require('mongo-to-csv');
 
 // Connecting to Databletase
 var mongoose = require('mongoose');
@@ -39,19 +38,16 @@ var trialSchema = new Schema(
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-// Javscript loads
-// var reynolds = require("./asocialReynolds.js");
-
 // HTML page loads
 var reynoldsBasicHTML = fs.readFileSync('./indexOriginal.html');
 var reynoldsSimHTML = fs.readFileSync('./indexAsocial.html');
-var reynoldsMatterPhysHTML = fs.readFileSync('./indexPhysics.html');
-
+// var reynoldsMatterPhysHTML = fs.readFileSync('./indexPhysics.html');
 
 var recentTrial = "";
 
 app.use("/", express.static(__dirname + '/public'));
 
+// Define how the server responds to different requests.
 app
 	.get('/', function (request, response) {
 	  var htmlRes =  reynoldsSimHTML;
@@ -111,20 +107,10 @@ app
     	});
 
 
-    	// csvFromMongoDB(recentTrial)
-    	
-    	// var file = '/public/GSIdata/exampleTrial.csv'
-
-    	// var file = './public/GSIdata/exampleTrial.csv'
-         // var file = fs.readFileSync('./public/GSIdata/exampleTrial.csv')
-         // response.download(file, 'exampleTrial.csv');
-         // var file = fs.readFileSync('./public/GSIdata/exampleTrial.csv')
-         // response.download(file, 'exampleTrial.csv');
-         // response.end();
-
 	} )
 
-	// MONGO DB functions
+	// Searches the Mongo Database for a given trial and downloads that trial's 
+	// data as a csv file in the ./public/GSIdata/ folder.
 	function csvFromMongoDB(trialSearch) {
 		var tempArr;
 		MongoClient.connect(mongoDB, function(err, db) {
@@ -144,13 +130,11 @@ app
 		        var avoidancearr = result[0].avoidance + '\n'
 		        var collisionarr = result[0].collision + '\n'
 		        // var postionArr = result[0].position + '\n'
-		   		// Write the Data to a CSV 
 
-		   		
 
-		   		writeToCSV(GSIarr, lightarr, alignmentarr, attractionarr, avoidancearr,  collisionarr, trialSearch+".csv")
 		   	
-		   		// writeToCSV(avoidancearr, trialSearch+".csv")
+		   		writeToCSV(GSIarr, lightarr, alignmentarr, attractionarr, avoidancearr,  collisionarr, trialSearch+".csv")
+		   
 		  
 		
 			    db.close();
@@ -159,7 +143,7 @@ app
 	}
 
 
-	// Function to write the contents of an array to a CSV
+	// Function to write the contents of an array to a CSV.
 	function writeToCSV(gsiC, lightC, alignmentC, attractionC, avoidnaceC, collisionC, nameOfCSV) {
 		var writer = csvWriter( {
 			headers: ["GSI","ALIGN", "ATTRACT", "AVOID", "COLLISION"]
@@ -180,49 +164,14 @@ app
 		})
 
 		writer.write(behaveCollection)
-			// var tempI = 0;
-			// gsiC.forEach(function(element) {
-
-			// 	// var tempArr = this.split(',')
-			// 	// tempArr.forEach(function(element) {		  	
-			// 	writer.write(gsiC, lightC, alignmentC, attractionC, avoidnaceC, collisionC])
-			// 	// });
-			// 	tempI = tempI + 1;
-			// })
-			
-
-		  
-
-		   	writer.end()
-		
-		
+		writer.end()	
 	}
 
 
 
-	// .get('/asocial', function (request, response) {
-	//   	var htmlRes =  reynoldsSimHTML;
 
-	// 	response.writeHead(200, {'Content-Type': 'text/html'});
-
-	// 	response.write(htmlRes)
-
-	// 	response.end();
-	// })
-	// .get('/phys', function(request, response) {
-	// 	var htmlRes =  reynoldsMatterPhysHTML;
-
-	// 	response.writeHead(200, {'Content-Type': 'text/html'});
-
-	// 	response.write(htmlRes)
-
-	// 	response.end();
-	// })
-// // var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });\
-
-
-
-
+// Set the port and host to the server where the simulation can be reached 
+// Currently configured to be served locally.
 var port = config.get('Server.port');
 app.set('port', port);
 var server = app.listen(port, function () {
