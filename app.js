@@ -40,7 +40,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // HTML page loads
 var reynoldsBasicHTML = fs.readFileSync('./indexOriginal.html');
-var reynoldsSimHTML = fs.readFileSync('./indexAsocial.html');
+var reynoldsSimHTML = fs.readFileSync('./swarmModel.html');
 // var reynoldsMatterPhysHTML = fs.readFileSync('./indexPhysics.html');
 
 var recentTrial = "";

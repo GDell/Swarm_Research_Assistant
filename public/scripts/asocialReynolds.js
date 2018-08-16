@@ -9,6 +9,7 @@
 
 
 // Saves the sliding bar objects in the indexOriginal page as variables.
+var scaleSlider = document.getElementById("scaleDiv")
 var lightSlider = document.getElementById("lightRange");
 var alignSlider = document.getElementById("alignmentRange");
 var avoidSlider = document.getElementById("avoidanceRange");
@@ -16,6 +17,7 @@ var attractSlider = document.getElementById("attractionRange")
 var collisionSlider = document.getElementById("collisionRange");
 
 // Sets the initial values of the behavior slide bars
+var timesIncrease = 1
 var lightSetting = 50/100;
 var alignSetting = 50/100;
 var avoidSetting = 50/100;
@@ -23,6 +25,10 @@ var attractSetting = 50/100;
 var collisionSetting = 50/10;
 
 // Changes the strength value of a behavior when a slide bar is interacted with.
+scaleSlider.oninput = function() {
+  timesIncrease = this.value/100;
+  // console.log("Light attraction strength"+lightSetting);
+}
 lightSlider.oninput = function() {
   lightSetting = this.value/100;
   console.log("Light attraction strength"+lightSetting);
@@ -48,15 +54,16 @@ collisionSlider.oninput = function() {
 // Starting Variables
 var nIndividuals = 50;
 var baseVelocity = 1;
-var spatialDistribution = 175;
+var spatialDistribution = 100;
 // Starting average location for the swarm.
 var bodySize = 8;
 
+
+var senseDistance = 800;
 // Size of the arena
 var canvasWidth = 700;
 var canvasHeight = 700;
-// Cluster center for starting swarm location.
-var centerStart = canvasHeight/2;
+
 
 // Colors for the HTML canvas display
 var backgroundColor = "#414f59"
@@ -88,6 +95,15 @@ var alignmentSim;
 var simAttraction;
 var simAvoidance;
 var simCollision;
+var ctx;
+var percentGreater;
+// var timesIncrease = 1;
+
+var arenaScale;
+
+
+// Cluster center for starting swarm location.
+var centerStart = ((timesIncrease*canvasHeight))/2;
 
 // boolean state variable to keep track of whether or not the simulation is currently paused.
 var pauseState = true;
@@ -97,7 +113,7 @@ function setup() {
 
   // Create a canvas in the canvas HTML div to display the swarm.
   createCanvas(canvasWidth, canvasHeight)
-
+  ctx = document.getElementById('defaultCanvas0').getContext('2d');
   // Intialize the simulation
   initialize()
 
@@ -107,13 +123,20 @@ function setup() {
 function draw() {
 
   // Display the behavior strengths in HTML 
+  // document.getElementById("scaleDiv").innerHTML = lightSetting;
   document.getElementById("lightDisplayVal").innerHTML = lightSetting;
   document.getElementById("alignmentDisplayVal").innerHTML = alignSetting;
   document.getElementById("avoidanceDisplayVal").innerHTML = avoidSetting;
   document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
   document.getElementById("collisionDisplayVal").innerHTML = collisionSlider.value/100;
+  // ctx.translate(canvasHeight/4,canvasHeight/4)
+  if(timesIncrease < 1) timesIncrease = 1;
+  arenaScale = 1/timesIncrease;
 
-  // Call the reset function if the reset button is pressed.
+  ctx.scale(arenaScale,arenaScale)
+
+
+  // Call the rctx.scale(2,2)eset function if the reset button is pressed.
   document.getElementById("resetButton").onclick = function() {
       reset();
   }
@@ -347,7 +370,7 @@ function draw() {
         var collision = this.collide(boids);
         var alignment = this.align(boids);
         var attraction = this.cohesion(boids)
-        var avoidance = this. avoidance(boids, avoidanceDistance)
+        var avoidance = this.avoidance(boids, avoidanceDistance)
 
         // Check to see which behaviors are checked.
         simLight = document.getElementById('lightCheckBox').checked;
@@ -390,7 +413,7 @@ function draw() {
         this.acceleration = createVector(0,0)
       }
 
-      // Attraction behavior primitive
+      // The light Attraction behavior primitive
       Boid.prototype.attraction  = function(target) {
         var desired = p5.Vector.sub(target, this.position)
         // Normalize desired and scale to maximum speed
@@ -471,7 +494,7 @@ function draw() {
 
       // Align behavior primitive. Causes boids to align to boids closest to it within 600 arbitrary units (neighbordist)
       Boid.prototype.align = function(boids) {
-        var neighbordist = 600;
+        var neighbordist = senseDistance;
         var sum = createVector(0,0);
         var count = 0;
         for (var i = 0; i < boids.length; i++) {
@@ -545,9 +568,9 @@ function draw() {
       // This function causes Boids to wrap aroud the Canvas view.
       Boid.prototype.borders = function() {
         if (this.position.x < -this.r)  this.position.x = width +this.r;
-        if (this.position.y < -this.r)  this.position.y = height+this.r;
-        if (this.position.x > width +this.r) this.position.x = -this.r;
-        if (this.position.y > height+this.r) this.position.y = -this.r;
+        if (this.position.y < -this.r)  this.position.y = height +this.r;
+        if (this.position.x > (width*timesIncrease + this.r)) this.position.x = -this.r;
+        if (this.position.y > (height*timesIncrease +this.r)) this.position.y = -this.r;
       }
 
       // Helper function for printing the location of a swarm.

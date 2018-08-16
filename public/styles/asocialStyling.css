@@ -1,13 +1,18 @@
 .slidecontainer {
     width: 310px; 
-    margin-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+
+.scaleBar {
+  width: 450px;
 }
 
 .slider {
   -webkit-appearance: none;  /* Override default CSS styles */
   appearance: none;
   width: 100%; /* Full-width */
-  height: 25px; /* Specified height */
+  height: 18px; /* Specified height */
   background: #d3d3d3; /* Grey background */
   outline: none; /* Remove outline */
   opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
