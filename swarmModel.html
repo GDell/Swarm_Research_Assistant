@@ -1,9 +1,10 @@
   <head>
+    <script src="/Packages/Plotly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="/styles/asocialStyling.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <meta charset>
 
-    <h1 style=" margin-left: 0%;"><b>Research Assistant</b></h1>
+    <h1 style=" margin-left: 0%;"><b>Swarm Simulator</b></h1>
   </head>
 
   <body>
@@ -83,9 +84,11 @@
     </ul>
 
    </div>
-   <div style="clear: both; float: left; margin-left: 6%">
-        <div class="scaleBar">
-          <input type="range" min="50" max="300" value="50" class="slider" id="scaleDiv">
+   <div style="clear: both; float: left; margin-left: 4%">
+        <p style="display: inline-block; float: left; padding-bottom: 40px"><b>Scale</b></p>
+        <div class="scaleBar" style="display: inline-block; padding-top: 14.5px">
+          
+          <input type="range" min="50" max="200" value="50" class="slider" id="scaleDiv" style="display: inline-block; margin-left: 4px">
         </div>
    </div>
   </body>
@@ -94,6 +97,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.12.0/matter.js"></script>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script> -->
 
+  <!-- <script src="/plotly.min.js"></script> -->
   <script src="/p5/p5.js"></script>
   <script src="/scripts/asocialReynolds.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
