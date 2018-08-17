@@ -23,13 +23,11 @@ var alignSetting = 50/100;
 var avoidSetting = 50/100;
 var attractSetting = 50/100;
 var collisionSetting = 50/10;
+var previousScale = 1;
 
-// Changes the strength value of a behavior when a slide bar is interacted with.
-scaleSlider.oninput = function() {
-  timesIncrease = this.value/100;
-  // console.log("Light attraction strength"+lightSetting);
-}
+
 lightSlider.oninput = function() {
+
   lightSetting = this.value/100;
   console.log("Light attraction strength"+lightSetting);
 }
@@ -58,7 +56,7 @@ var spatialDistribution = 100;
 // Starting average location for the swarm.
 var bodySize = 8;
 
-
+var currentCenter;
 var senseDistance = 800;
 // Size of the arena
 var canvasWidth = 700;
@@ -103,16 +101,27 @@ var arenaScale;
 
 
 // Cluster center for starting swarm location.
-var centerStart = ((timesIncrease*canvasHeight))/2;
+var centerStart;
+var oldCenter;
 
 // boolean state variable to keep track of whether or not the simulation is currently paused.
 var pauseState = true;
+
+// Changes the strength value of a behavior when a slide bar is interacted with.
+scaleSlider.oninput = function() {
+
+  
+  timesIncrease = this.value/100;
+  // currentCenter = [height/2, width/2]
+  // console.log("Light attraction strength"+lightSetting);
+}
 
 // Setup function runs once when the page is first loaded. 
 function setup() {
 
   // Create a canvas in the canvas HTML div to display the swarm.
   createCanvas(canvasWidth, canvasHeight)
+  currentCenter = [canvasWidth/2,canvasHeight/2]
   ctx = document.getElementById('defaultCanvas0').getContext('2d');
   // Intialize the simulation
   initialize()
@@ -122,6 +131,7 @@ function setup() {
 // A looping function that is constantly running after the setup function is finished running.
 function draw() {
 
+  // oldCenter = [height/2,width/2]; 
   // Display the behavior strengths in HTML 
   // document.getElementById("scaleDiv").innerHTML = lightSetting;
   document.getElementById("lightDisplayVal").innerHTML = lightSetting;
@@ -130,11 +140,18 @@ function draw() {
   document.getElementById("attractionDisplayVal").innerHTML = attractSetting;
   document.getElementById("collisionDisplayVal").innerHTML = collisionSlider.value/100;
   // ctx.translate(canvasHeight/4,canvasHeight/4)
-  if(timesIncrease < 1) timesIncrease = 1;
-  arenaScale = 1/timesIncrease;
+  if(timesIncrease < 1) {
+    timesIncrease = 1;
+    arenaScale = 1/timesIncrease;
+  } else {
+    oldCenter = [height/2,width/2]
+    arenaScale = 1/timesIncrease;
+    ctx.scale(arenaScale,arenaScale)
+    flock.scaleFlock();
+  }
 
-  ctx.scale(arenaScale,arenaScale)
-
+  
+ 
 
   // Call the rctx.scale(2,2)eset function if the reset button is pressed.
   document.getElementById("resetButton").onclick = function() {
@@ -228,6 +245,9 @@ function draw() {
       // function to initiaize the swarm, randomly distributed around the center of the 
       // canvas view.
       function initialize() {
+        centerStart = ((timesIncrease*canvasHeight))/2;
+
+        console.log(centerStart)
         // Function to retrun a value from a normal distribution around
         // a mean and with a given standard deviation.
         Math.randomGaussian = function(mean, standardDeviation) {
@@ -297,8 +317,13 @@ function draw() {
       // Dispay each boid by calling its rend() function
       Flock.prototype.display = function() {
         for(var i =0; i < this.boids.length; i++) {
-          this.boids[i].rend(this.boids)
+          this.boids[i].rend(this.boids);
+        }
+      }
 
+      Flock.prototype.scaleFlock = function() {
+        for(var i =0; i < this.boids.length; i++) {
+          this.boids[i].scaleSingle();
         }
       }
 
@@ -355,6 +380,10 @@ function draw() {
       // Renders a boid on the HTML canvas
       Boid.prototype.rend = function(boids) {        
         this.render();
+      }
+
+      Boid.prototype.scaleSingle = function() {
+        this.scale();
       }
 
       // Applys acceleration to a BOID
@@ -550,12 +579,14 @@ function draw() {
 
       // Render's the BOID swarm on the canvas the canvas
       Boid.prototype.render = function() {
+        // var tempX = this.position.x * timesIncrease
+        // var tempY = this.position.y * timesIncrease
         // Find the boid's heading
         var theta = this.velocity.heading() + radians(90)
         fill(400)
         stroke(200)
         push()
-        translate(this.position.x, this.position.y);
+        translate(this.position.x + Math.abs(canvasWidth/2 - timesIncrease*(canvasWidth/2)), this.position.y + Math.abs(canvasWidth/2 - timesIncrease*(canvasWidth/2)));
         rotate(theta);
         beginShape();
         vertex(0, -this.r*2);
@@ -570,15 +601,10 @@ function draw() {
         if (this.position.x < -this.r)  this.position.x = width +this.r;
         if (this.position.y < -this.r)  this.position.y = height +this.r;
         if (this.position.x > (width*timesIncrease + this.r)) this.position.x = -this.r;
-        if (this.position.y > (height*timesIncrease +this.r)) this.position.y = -this.r;
+        if (this.position.y > (height*timesIncrease + this.r)) this.position.y = -this.r;
       }
 
-      // Helper function for printing the location of a swarm.
-      function printBoidLocation(boid) {
-        console.log("Boid loc: " +[boid.xPosition, boid.yPosition])
-      }
-
-      // Computes the cartesian distance between two x,y coordinates
+       // Computes the cartesian distance between two x,y coordinates
       function computeCartDist(x1,x2,y1,y2) {
         var a = x1 - x2 
         var b = y1 - y2 
@@ -586,6 +612,31 @@ function draw() {
         return c
       }
 
+
+      Boid.prototype.scale = function() {
+        // computeCartDist(currentCenter[0],currentCenter[1],canvasHeight/2,canvasWidth/2)
+
+        // console.log("new center:" +[n1,n2])
+        // console.log("old center:"+[p1,p2])
+        // var xDif = Math.abs(((timesIncrease*canvasHeight))/2 )
+        // var yDif = Math.abs(((timesIncrease*canvasHeight))/2 - p2)
+        // console.log("XDIF: "+ xDif)
+        var x = (this.position.x);
+        var y = (this.position.y);
+
+        // // console.log("Old x pos:" + this.position.x)
+        this.position.x = x
+        // // // console.log("New x pos:" + this.position.x)
+        this.position.y = y
+        
+      }
+
+      // Helper function for printing the location of a swarm.
+      function printBoidLocation(boid) {
+        console.log("Boid loc: " +[boid.xPosition, boid.yPosition])
+      }
+
+     
       // Calculates the total distance between all members in the swarm.
       function calculateGroupDist(swarm) {
         var groupedDistance = 0;
